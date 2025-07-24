@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Réinscription - Espérance Drouaise</title>
+    
+    <!-- ======================= CSS INTÉGRÉ ======================= -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        :root { /* Variables de couleurs */
+            --primary-color: #005a9c; --secondary-color: #28a745; --light-grey: #f4f7f6;
+            --dark-grey: #555; --border-color: #ddd; --bg-color: #ffffff;
+        }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--light-grey); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .form-container { max-width: 600px; width: 100%; background-color: var(--bg-color); padding: 30px 40px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); overflow: hidden; }
+        header { text-align: center; margin-bottom: 25px; }
+        .logo { max-width: 80px; margin-bottom: 10px; }
+        h2 { color: var(--primary-color); margin: 0; }
+        h3 { text-align: center; color: #333; margin-bottom: 25px; }
+        h4 { margin-top: 20px; margin-bottom: 10px; color: var(--primary-color); border-bottom: 2px solid var(--light-grey); padding-bottom: 5px; }
+        .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 30px; height: 10px; margin-bottom: 30px; }
+        .progress-bar-fill { height: 100%; background-color: var(--secondary-color); border-radius: 30px; width: 0%; transition: width 0.4s ease-in-out; }
+        #inscriptionForm { position: relative; min-height: 400px; }
+        .form-step { position: absolute; width: 100%; opacity: 0; transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out; transform: translateX(100%); pointer-events: none; }
+        .form-step.active { position: relative; opacity: 1; transform: translateX(0); pointer-events: auto; }
+        .form-step.inactive-prev { transform: translateX(-100%); }
+        input[type="text"], input[type="email"], input[type="tel"], input[type="date"], select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; margin-bottom: 15px; font-size: 1rem; }
+        .radio-card-group { display: flex; gap: 15px; justify-content: center; margin: 20px 0; }
+        .radio-card { flex: 1; background: #f9f9f9; border: 2px solid var(--border-color); border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s ease; }
+        .radio-card input[type="radio"] { display: none; }
+        .radio-card:hover { border-color: var(--primary-color); }
+        .radio-card:has(input:checked) { border-color: var(--secondary-color); box-shadow: 0 0 10px rgba(40, 167, 69, 0.2); }
+        .radio-card input[type="radio"]:checked + span { color: var(--secondary-color); font-weight: 600; }
+        .radio-group-vertical label { display: block; background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border-color); cursor: pointer; }
+        .radio-group-vertical input { margin-right: 10px; }
+        .checkbox-group { display: flex; align-items: flex-start; margin-bottom: 15px; }
+        .checkbox-group input { margin-top: 5px; margin-right: 10px; }
+        .nav-buttons { display: flex; justify-content: space-between; margin-top: 30px; }
+        .btn { padding: 12px 30px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 500; cursor: pointer; transition: all 0.3s; }
+        .btn-next, #submitBtn { background-color: var(--secondary-color); color: white; }
+        .btn-prev { background-color: #ccc; color: #333; }
+        .file-upload-wrapper { margin: 20px 0; text-align: center; }
+        .file-upload-wrapper input[type="file"] { display: none; }
+        .file-upload-wrapper .btn { display: inline-block; background-color: #6c757d; color: white; margin: 5px; }
+        .file-upload-wrapper span { display: block; margin-top: 10px; color: var(--dark-grey); font-style: italic; }
+        .hidden { display: none !important; }
+        .warning { background-color: #fff3cd; color: #856404; padding: 15px; border: 1px solid #ffeeba; border-radius: 5px; margin: 15px 0; }
+        #loading, #successMessage, #errorMessage { text-align: center; padding: 40px 20px; }
+        .spinner { border: 8px solid #f3f3f3; border-top: 8px solid var(--primary-color); border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .child-info-group { border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; margin-bottom: 20px; background: #fafafa; }
+        .health-pdf-links a { display: block; text-align: center; padding: 10px; background-color: var(--primary-color); color: white; text-decoration: none; border-radius: 8px; margin-bottom: 10px; transition: background-color 0.2s; }
+        .health-pdf-links a:hover { background-color: #004a80; }
+        #camera-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        #camera-modal video, #camera-modal canvas { border-radius: 8px; max-width: 90%; max-height: 70vh; }
+        #camera-modal .camera-buttons { margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <header>
+            <img src="https://i.imgur.com/lnozkwr.png" alt="Logo Espérance Drouaise" class="logo">
+            <h2>Réinscription Saison 2025-2026</h2>
+        </header>
+
+        <div class="progress-bar">
+            <div class="progress-bar-fill" id="progressBar"></div>
+        </div>
+
+        <form id="inscriptionForm">
+            <!-- ÉTAPE 1: TYPE D'ADHÉRENT ET NOMBRE D'ENFANTS -->
+            <div class="form-step active" data-step="1">
+                <h3>Pour qui est cette réinscription ?</h3>
+                <div class="radio-card-group">
+                    <label class="radio-card">
+                        <input type="radio" name="typeAdherent" value="mineur" required>
+                        <span>Un ou plusieurs mineurs</span>
+                    </label>
+                    <label class="radio-card">
+                        <input type="radio" name="typeAdherent" value="majeur" required>
+                        <span>Un adhérent majeur</span>
+                    </label>
+                </div>
+                <div id="cotisation-mineur-select" class="hidden">
+                    <p>Combien d'enfants de la famille inscrivez-vous au total ?</p>
+                    <select id="numEnfants" name="numEnfants">
+                        <option value="1">1 enfant</option>
+                        <option value="2">2 enfants</option>
+                        <option value="3">3 enfants</option>
+                        <option value="4">4 enfants ou plus</option>
+                    </select>
+                </div>
+                <button type="button" class="btn btn-next">Suivant</button>
+            </div>
+
+            <!-- ÉTAPE 2: INFOS ADHÉRENT(S) -->
+            <div class="form-step" data-step="2">
+                <h3>Informations personnelles</h3>
+                <div id="section-responsable" class="hidden">
+                    <h4>Responsable Légal</h4>
+                    <input type="text" id="nomResponsable" name="nomResponsable" placeholder="Nom & Prénom du responsable">
+                    <input type="email" id="emailResponsable" name="emailResponsable" placeholder="Email du responsable">
+                    <input type="tel" id="telephoneResponsable" name="telephoneResponsable" placeholder="Téléphone du responsable">
+                    <input type="text" id="adresseResponsable" name="adresseResponsable" placeholder="Adresse postale">
+                    <input type="text" id="codePostalResponsable" name="codePostalResponsable" placeholder="Code Postal">
+                    <input type="text" id="villeResponsable" name="villeResponsable" placeholder="Ville">
+                </div>
+                <div id="adherent-info-container"></div>
+                <div class="nav-buttons">
+                    <button type="button" class="btn btn-prev">Précédent</button>
+                    <button type="button" class="btn btn-next">Suivant</button>
+                </div>
+            </div>
+            
+            <!-- ÉTAPE 3: SANTÉ -->
+            <div class="form-step" data-step="3">
+                <h3>Questionnaire de Santé</h3>
+                <p>Veuillez consulter le questionnaire officiel (PDF) correspondant avant de répondre ci-dessous.</p>
+                <div class="health-pdf-links">
+                    <a href="https://drive.google.com/file/d/1dD8kER0IXqTzQwUT9EEfKdsBb13-Qv9p/view?usp=share_link" target="_blank" rel="noopener noreferrer">Consulter le questionnaire pour MINEUR</a>
+                    <a href="https://drive.google.com/file/d/1g343Xgj3jVNfLD31uHyXyT-l2a048RwS/view?usp=sharing" target="_blank" rel="noopener noreferrer">Consulter le questionnaire pour MAJEUR</a>
+                </div>
+                <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
+                <div class="radio-group-vertical">
+                    <label><input type="radio" name="reponseQuestionnaire" value="non" required> J'atteste avoir répondu "NON" à toutes les questions.</label>
+                    <label><input type="radio" name="reponseQuestionnaire" value="oui" required> J'ai répondu "OUI" à au moins une question (certificat médical requis).</label>
+                </div>
+                <div id="certificat-medical-container" class="hidden file-upload-wrapper">
+                    <p class="warning">Veuillez joindre un certificat médical de non-contre-indication.</p>
+                    <label for="certificatMedical" class="btn">Téléverser le(s) certificat(s)</label>
+                    <input type="file" id="certificatMedical" name="certificatMedical" accept=".pdf,.jpg,.jpeg,.png" multiple>
+                    <span id="certificat-file-name">Aucun fichier choisi</span>
+                </div>
+                <div class="nav-buttons">
+                    <button type="button" class="btn btn-prev">Précédent</button>
+                    <button type="button" class="btn btn-next">Suivant</button>
+                </div>
+            </div>
+
+            <!-- ÉTAPE 4: DOCUMENTS ET COTISATION -->
+            <div class="form-step" data-step="4">
+                <h3>Documents & Cotisation</h3>
+                <div class="file-upload-wrapper">
+                    <p>Téléversez une photo d'identité récente pour chaque adhérent.<br><strong>Conseil :</strong> Prenez la photo sur un fond uni et clair (blanc de préférence).</p>
+                    <label for="photoIdentite" class="btn">Choisir un fichier</label>
+                    <button type="button" id="take-photo-btn" class="btn">Prendre une photo</button>
+                    <!-- On retire 'required' de l'input car la validation se fait en JS -->
+                    <input type="file" id="photoIdentite" name="photoIdentite" accept="image/*" multiple>
+                    <span id="photo-file-name">Aucune photo choisie</span>
+                </div>
+                <div id="section-cotisation">
+                     <h4>Cotisation</h4>
+                     <p>Montant total pour la saison : <strong id="montantTotal">130 €</strong></p>
+                </div>
+                <div class="nav-buttons">
+                    <button type="button" class="btn btn-prev">Précédent</button>
+                    <button type="button" class="btn btn-next">Suivant</button>
+                </div>
+            </div>
+
+            <!-- ÉTAPE 5: FINALISATION -->
+            <div class="form-step" data-step="5">
+                <h3>Finalisation</h3>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="droitImage" name="droitImage" required>
+                    <label for="droitImage">J'autorise la prise de vue et la diffusion de mon image (ou celle de mon/mes enfant(s)).</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="reglement" name="reglement" required>
+                    <label for="reglement">J'ai lu et j'accepte le <a href="https://drive.google.com/file/d/1sBCrjrDXDr-Qh1mcUJ71ytZFIiTt5xvi/view?usp=sharing" target="_blank" rel="noopener noreferrer">règlement intérieur du club</a>.</label>
+                </div>
+                <div class="nav-buttons">
+                    <button type="button" class="btn btn-prev">Précédent</button>
+                    <button type="submit" id="submitBtn" class="btn">Envoyer la pré-inscription</button>
+                </div>
+            </div>
+        </form>
+
+        <div id="loading" class="hidden"> <div class="spinner"></div> <p>Envoi en cours...</p> </div>
+        <div id="successMessage" class="hidden">
+            <h2>Pré-inscription enregistrée !</h2>
+            <p>Merci ! Nous avons bien reçu vos informations.</p>
+            <p>Le montant de la cotisation est de <strong id="montantFinal"></strong>.</p>
+            <p class="warning" style="text-align: left;">La cotisation sera à régler par espèce ou par chèque à l'ordre de "Espérance Drouaise".<br>Veuillez la placer dans une enveloppe au nom et prénom de l'enfant, puis la remettre au club lors de la première séance.</p>
+        </div>
+        <div id="errorMessage" class="hidden"> <h2>Une erreur est survenue.</h2> <p>Veuillez contacter le club à <a href="mailto:ed28gym@gmail.com">ed28gym@gmail.com</a>.</p> </div>
+    </div>
+    
+    <div id="camera-modal" class="hidden">
+        <video id="camera-feed" autoplay playsinline></video>
+        <canvas id="photo-canvas" class="hidden"></canvas>
+        <div class="camera-buttons">
+            <button id="capture-btn" class="btn">Capturer</button>
+            <button id="recapture-btn" class="btn hidden">Reprendre</button>
+            <button id="confirm-photo-btn" class="btn hidden">Confirmer</button>
+            <button id="cancel-camera-btn" class="btn btn-prev">Annuler</button>
+        </div>
+    </div>
+
+    <!-- ======================= JAVASCRIPT INTÉGRÉ (VERSION CORRIGÉE) ======================= -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwVHCUbxz8odpOfzWgx2gGykk-AAIBmlikuLN26t6a8bzrXQaqfqmahJN-b6ZYRN3j84A/exec';
+            
+            const form = document.getElementById('inscriptionForm');
+            const steps = Array.from(document.querySelectorAll('.form-step'));
+            const nextBtns = document.querySelectorAll('.btn-next');
+            const prevBtns = document.querySelectorAll('.btn-prev');
+            const progressBar = document.getElementById('progressBar');
+            const sectionResponsable = document.getElementById('section-responsable');
+            const typeAdherentRadios = document.querySelectorAll('input[name="typeAdherent"]');
+            const reponseQuestionnaireRadios = document.querySelectorAll('input[name="reponseQuestionnaire"]');
+            const certificatContainer = document.getElementById('certificat-medical-container');
+            const certificatInput = document.getElementById('certificatMedical');
+            const cotisationMineurSelect = document.getElementById('cotisation-mineur-select');
+            const numEnfantsSelect = document.getElementById('numEnfants');
+            const montantTotalDisplay = document.getElementById('montantTotal');
+            const montantFinalDisplay = document.getElementById('montantFinal');
+            const adherentInfoContainer = document.getElementById('adherent-info-container');
+            const photoInput = document.getElementById('photoIdentite');
+            
+            let currentStep = 1;
+            let photoFiles = [];
+
+            const cameraModal = document.getElementById('camera-modal');
+            const video = document.getElementById('camera-feed');
+            const canvas = document.getElementById('photo-canvas');
+            const captureBtn = document.getElementById('capture-btn');
+            const recaptureBtn = document.getElementById('recapture-btn');
+            const confirmBtn = document.getElementById('confirm-photo-btn');
+            const cancelBtn = document.getElementById('cancel-camera-btn');
+            let stream;
+
+            document.getElementById('take-photo-btn').addEventListener('click', async () => {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+                    video.srcObject = stream;
+                    cameraModal.classList.remove('hidden');
+                    video.classList.remove('hidden');
+                    canvas.classList.add('hidden');
+                    recaptureBtn.classList.add('hidden');
+                    confirmBtn.classList.add('hidden');
+                    captureBtn.classList.remove('hidden');
+                } catch (err) {
+                    console.error("Erreur d'accès à la caméra: ", err);
+                    alert("Impossible d'accéder à la caméra. Vérifiez les autorisations de votre navigateur.");
+                }
+            });
+
+            captureBtn.addEventListener('click', () => {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+                video.classList.add('hidden');
+                canvas.classList.remove('hidden');
+                captureBtn.classList.add('hidden');
+                recaptureBtn.classList.remove('hidden');
+                confirmBtn.classList.remove('hidden');
+            });
+
+            recaptureBtn.addEventListener('click', () => {
+                video.classList.remove('hidden');
+                canvas.classList.add('hidden');
+                recaptureBtn.classList.add('hidden');
+                confirmBtn.classList.add('hidden');
+                captureBtn.classList.remove('hidden');
+            });
+
+            confirmBtn.addEventListener('click', () => {
+                canvas.toBlob(blob => {
+                    const newFile = new File([blob], `photo_identite_${Date.now()}.jpg`, { type: 'image/jpeg' });
+                    photoFiles.push(newFile);
+                    updatePhotoFileName();
+                    stopCamera();
+                }, 'image/jpeg');
+            });
+
+            cancelBtn.addEventListener('click', stopCamera);
+            function stopCamera() {
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+                cameraModal.classList.add('hidden');
+            }
+            
+            nextBtns.forEach(button => { button.addEventListener('click', () => { if (validateStep(currentStep)) { changeStep('next'); } }); });
+            prevBtns.forEach(button => { button.addEventListener('click', () => { changeStep('prev'); }); });
+
+            function changeStep(direction) {
+                const activeStep = document.querySelector('.form-step.active');
+                let nextStepNumber = (direction === 'next') ? currentStep + 1 : currentStep - 1;
+                activeStep.classList.remove('active');
+                if (direction === 'next') activeStep.classList.add('inactive-prev');
+                const nextStep = document.querySelector(`.form-step[data-step="${nextStepNumber}"]`);
+                if (nextStep) {
+                    nextStep.classList.remove('inactive-prev');
+                    nextStep.classList.add('active');
+                    currentStep = nextStepNumber;
+                }
+                updateProgressBar();
+            }
+            
+            function updateProgressBar() { progressBar.style.width = `${((currentStep - 1) / (steps.length - 1)) * 100}%`; }
+
+            function validateStep(step) {
+                const currentStepElement = document.querySelector(`.form-step[data-step="${step}"]`);
+                if (step === 4 && photoFiles.length === 0) {
+                    alert('Veuillez téléverser ou prendre au moins une photo d\'identité.');
+                    return false;
+                }
+                const inputs = currentStepElement.querySelectorAll('input[required]:not([type=file]), select[required]');
+                for(const input of inputs) {
+                    if ((input.type === 'radio' || input.type === 'checkbox') && !document.querySelector(`input[name="${input.name}"]:checked`)) { alert('Veuillez cocher une option.'); return false; }
+                    else if (!input.value) { alert('Veuillez remplir tous les champs.'); return false; }
+                }
+                return true;
+            }
+
+            typeAdherentRadios.forEach(radio => radio.addEventListener('change', (e) => {
+                const type = e.target.value;
+                const inputsResponsable = sectionResponsable.querySelectorAll('input');
+                if (type === 'mineur') {
+                    cotisationMineurSelect.classList.remove('hidden');
+                    sectionResponsable.classList.remove('hidden');
+                    inputsResponsable.forEach(input => input.setAttribute('required', ''));
+                    generateAdherentFields(parseInt(numEnfantsSelect.value)); 
+                } else {
+                    cotisationMineurSelect.classList.add('hidden');
+                    sectionResponsable.classList.add('hidden');
+                    inputsResponsable.forEach(input => input.removeAttribute('required'));
+                    generateAdherentFields(1);
+                }
+                updateCotisation();
+            }));
+
+            reponseQuestionnaireRadios.forEach(radio => radio.addEventListener('change', (e) => {
+                if (e.target.value === 'oui') {
+                    certificatContainer.classList.remove('hidden');
+                    certificatInput.setAttribute('required', '');
+                } else {
+                    certificatContainer.classList.add('hidden');
+                    certificatInput.removeAttribute('required');
+                }
+            }));
+            
+            numEnfantsSelect.addEventListener('change', () => {
+                updateCotisation();
+                generateAdherentFields(parseInt(numEnfantsSelect.value));
+            });
+
+            function updateCotisation() {
+                const type = document.querySelector('input[name="typeAdherent"]:checked')?.value;
+                let montant = 130;
+                if (type === 'mineur') {
+                    const nbEnfants = parseInt(numEnfantsSelect.value);
+                    const tarifs = { 1: 130, 2: 210, 3: 230, 4: 250 };
+                    montant = tarifs[nbEnfants] || 250;
+                }
+                montantTotalDisplay.textContent = `${montant} €`;
+            }
+
+            function generateAdherentFields(count) {
+                adherentInfoContainer.innerHTML = '';
+                const type = document.querySelector('input[name="typeAdherent"]:checked')?.value;
+                for (let i = 1; i <= count; i++) {
+                    const isMajeur = (type === 'majeur');
+                    const title = isMajeur ? `<h4>Informations Adhérent</h4>` : `<h4>Informations Enfant ${i}</h4>`;
+                    const fieldGroup = document.createElement('div');
+                    fieldGroup.className = 'child-info-group';
+                    fieldGroup.innerHTML = `
+                        ${title}
+                        <input type="text" name="prenom_${i}" placeholder="Prénom" required>
+                        <input type="text" name="nom_${i}" placeholder="Nom" required>
+                        <input type="date" name="dateNaissance_${i}" required>
+                        ${isMajeur ? `
+                            <input type="email" name="email_${i}" placeholder="Email de l'adhérent" required>
+                            <input type="text" name="adresse_${i}" placeholder="Adresse postale" required>
+                            <input type="text" name="codePostal_${i}" placeholder="Code Postal" required>
+                            <input type="text" name="ville_${i}" placeholder="Ville" required>
+                        ` : ''}
+                    `;
+                    adherentInfoContainer.appendChild(fieldGroup);
+                }
+            }
+            
+            photoInput.addEventListener('change', (e) => {
+                photoFiles.push(...e.target.files);
+                updatePhotoFileName();
+            });
+            function updatePhotoFileName() {
+                document.getElementById('photo-file-name').textContent = photoFiles.length > 0 ? `${photoFiles.length} photo(s) prête(s)` : "Aucune photo choisie";
+            }
+            certificatInput.addEventListener('change', (e) => { document.getElementById('certificat-file-name').textContent = e.target.files.length > 0 ? `${e.target.files.length} certificat(s) choisi(s)` : "Aucun fichier choisi"; });
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                document.getElementById('loading').classList.remove('hidden');
+                form.classList.add('hidden');
+
+                try {
+                    const formData = new FormData(form);
+                    const data = {
+                        typeAdherent: formData.get('typeAdherent'),
+                        nomResponsable: formData.get('nomResponsable'),
+                        emailResponsable: formData.get('emailResponsable'),
+                        telephoneResponsable: formData.get('telephoneResponsable'),
+                        adresseResponsable: formData.get('adresseResponsable'),
+                        codePostalResponsable: formData.get('codePostalResponsable'),
+                        villeResponsable: formData.get('villeResponsable'),
+                        montantCotisation: montantTotalDisplay.textContent,
+                        attestationSante: formData.get('reponseQuestionnaire') === 'non' ? "Attestation sur l'honneur" : "Certificat Fourni",
+                        droitImageAccepte: formData.get('droitImage') === 'on',
+                        reglementAccepte: formData.get('reglement') === 'on',
+                        adherents: []
+                    };
+                    
+                    const count = data.typeAdherent === 'majeur' ? 1 : parseInt(formData.get('numEnfants'));
+                    for (let i = 1; i <= count; i++) {
+                        data.adherents.push({
+                            prenom: formData.get(`prenom_${i}`),
+                            nom: formData.get(`nom_${i}`),
+                            dateNaissance: formData.get(`dateNaissance_${i}`),
+                            email: formData.get(`email_${i}`) || 'N/A',
+                            adresse: formData.get(`adresse_${i}`) || (data.typeAdherent === 'majeur' ? '' : data.adresseResponsable),
+                            codePostal: formData.get(`codePostal_${i}`) || (data.typeAdherent === 'majeur' ? '' : data.codePostalResponsable),
+                            ville: formData.get(`ville_${i}`) || (data.typeAdherent === 'majeur' ? '' : data.villeResponsable),
+                        });
+                    }
+                    
+                    const fileToBase64 = (file) => new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.readAsDataURL(file);
+                        reader.onload = () => resolve({ base64: reader.result, mimeType: file.type, fileName: file.name });
+                        reader.onerror = error => reject(error);
+                    });
+                    
+                    data.photos = await Promise.all(photoFiles.map(f => fileToBase64(f)));
+                    data.certificats = await Promise.all(Array.from(formData.getAll('certificatMedical')).filter(f => f.size > 0).map(f => fileToBase64(f)));
+
+                    const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
+                    const result = await response.json();
+                    
+                    document.getElementById('loading').classList.add('hidden');
+                    if (result.status === 'success') {
+                        document.getElementById('montantFinal').textContent = data.montantCotisation;
+                        document.getElementById('successMessage').classList.remove('hidden');
+                    } else { throw new Error(result.message); }
+
+                } catch (error) {
+                    console.error('Erreur lors de la soumission:', error);
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('errorMessage').classList.remove('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
