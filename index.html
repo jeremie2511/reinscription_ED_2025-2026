@@ -8,45 +8,50 @@
     <!-- ======================= CSS INTÉGRÉ ======================= -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-        :root { /* ... (CSS inchangé) ... */ }
+        :root {
+            --primary-color: #005a9c; --secondary-color: #28a745; --light-grey: #f4f7f6;
+            --dark-grey: #555; --border-color: #ddd; --bg-color: #ffffff;
+        }
         body { font-family: 'Poppins', sans-serif; background-color: var(--light-grey); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         .form-container { max-width: 600px; width: 100%; background-color: #fff; padding: 30px 40px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); overflow: hidden; }
         header { text-align: center; margin-bottom: 25px; }
         .logo { max-width: 80px; margin-bottom: 10px; }
-        h2 { color: #005a9c; margin: 0; }
-        h3, h4 { color: #333; }
-        h4 { margin-top: 20px; border-bottom: 2px solid #f4f7f6; padding-bottom: 5px; }
+        h2 { color: var(--primary-color); margin: 0; }
+        h3 { text-align: center; color: #333; margin-bottom: 25px; }
+        h4 { margin-top: 20px; margin-bottom: 10px; color: var(--primary-color); border-bottom: 2px solid var(--light-grey); padding-bottom: 5px; }
         .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 30px; height: 10px; margin-bottom: 30px; }
-        .progress-bar-fill { height: 100%; background-color: #28a745; border-radius: 30px; width: 0%; transition: width 0.4s ease-in-out; }
+        .progress-bar-fill { height: 100%; background-color: var(--secondary-color); border-radius: 30px; width: 0%; transition: width 0.4s ease-in-out; }
         #inscriptionForm { position: relative; min-height: 400px; }
         .form-step { position: absolute; width: 100%; opacity: 0; transition: all 0.3s ease-in-out; transform: translateX(100%); pointer-events: none; }
         .form-step.active { position: relative; opacity: 1; transform: translateX(0); pointer-events: auto; }
         .form-step.inactive-prev { transform: translateX(-100%); }
-        input[type="text"], input[type="email"], input[type="tel"], input[type="date"], select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; margin-bottom: 15px; font-size: 1rem; }
-        label { display: block; margin-bottom: 5px; font-weight: 500; color: #555; }
+        input[type="text"], input[type="email"], input[type="tel"], input[type="date"], select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; margin-bottom: 15px; font-size: 1rem; }
+        label { display: block; margin-bottom: 5px; font-weight: 500; color: var(--dark-grey); }
         .radio-card-group { display: flex; gap: 15px; }
-        .radio-card { flex: 1; background: #f9f9f9; border: 2px solid #ddd; border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s ease; }
+        .radio-card { flex: 1; background: #f9f9f9; border: 2px solid var(--border-color); border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s ease; }
         .radio-card input[type="radio"] { display: none; }
-        .radio-card:has(input:checked) { border-color: #28a745; box-shadow: 0 0 10px rgba(40, 167, 69, 0.2); }
-        .radio-card input[type="radio"]:checked + span { color: #28a745; font-weight: 600; }
-        .radio-group-vertical label { display: block; background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid #ddd; cursor: pointer; }
+        .radio-card:has(input:checked) { border-color: var(--secondary-color); box-shadow: 0 0 10px rgba(40, 167, 69, 0.2); }
+        .radio-card input[type="radio"]:checked + span { color: var(--secondary-color); font-weight: 600; }
+        .radio-group-vertical label { display: block; background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border-color); cursor: pointer; }
         .checkbox-group { display: flex; align-items: flex-start; margin-bottom: 15px; }
         .nav-buttons { display: flex; justify-content: space-between; margin-top: 30px; }
         .btn { padding: 12px 30px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 500; cursor: pointer; }
-        .btn-next, #submitBtn { background-color: #28a745; color: white; }
+        .btn-next, #submitBtn { background-color: var(--secondary-color); color: white; }
         .btn-prev { background-color: #ccc; }
         .file-upload-wrapper { margin-top: 15px; text-align: center; }
         .file-upload-wrapper input[type="file"] { display: none; }
         .file-upload-wrapper .btn { display: inline-block; background-color: #6c757d; color: white; margin: 5px; font-size: 0.9rem; padding: 10px 15px; }
-        .file-upload-wrapper span { display: block; margin-top: 10px; color: #555; font-style: italic; }
+        .file-upload-wrapper span { display: block; margin-top: 10px; color: var(--dark-grey); font-style: italic; }
         .hidden { display: none !important; }
         .warning { background-color: #fff3cd; color: #856404; padding: 15px; border: 1px solid #ffeeba; border-radius: 5px; margin: 15px 0; }
         #loading, #successMessage, #errorMessage { text-align: center; padding: 40px 20px; }
-        .spinner { border: 8px solid #f3f3f3; border-top: 8px solid #005a9c; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+        .spinner { border: 8px solid #f3f3f3; border-top: 8px solid var(--primary-color); border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; margin: 0 auto 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .child-info-group { border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; margin-bottom: 20px; background: #fafafa; }
-        .health-pdf-links a { display: block; text-align: center; padding: 10px; background-color: #005a9c; color: white; text-decoration: none; border-radius: 8px; margin-bottom: 10px; }
+        .health-pdf-links a { display: block; text-align: center; padding: 10px; background-color: var(--primary-color); color: white; text-decoration: none; border-radius: 8px; margin-bottom: 10px; }
         #camera-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        #camera-modal video, #camera-modal canvas { max-width: 90%; max-height: 70vh; }
+        #camera-modal .camera-buttons { margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -56,12 +61,10 @@
             <h2>Réinscription Saison 2025-2026</h2>
         </header>
 
-        <!-- MODIFICATION : Moins d'étapes, la barre de progression est ajustée -->
         <div class="progress-bar">
             <div class="progress-bar-fill" id="progressBar"></div>
         </div>
         
-        <!-- Un seul input file caché pour tout le formulaire -->
         <input type="file" id="photo-file-input" class="hidden" accept="image/*">
 
         <form id="inscriptionForm">
@@ -87,12 +90,12 @@
                 <h3>Informations personnelles</h3>
                 <div id="section-responsable" class="hidden">
                     <h4>Responsable Légal</h4>
-                    <input type="text" name="nomResponsable" placeholder="Nom & Prénom du responsable" required>
-                    <input type="email" name="emailResponsable" placeholder="Email (pour la confirmation)" required>
-                    <input type="tel" name="telephoneResponsable" placeholder="Téléphone" required>
-                    <input type="text" name="adresseResponsable" placeholder="Adresse postale" required>
-                    <input type="text" name="codePostalResponsable" placeholder="Code Postal" required>
-                    <input type="text" name="villeResponsable" placeholder="Ville" required>
+                    <input type="text" name="nomResponsable" placeholder="Nom & Prénom du responsable">
+                    <input type="email" name="emailResponsable" placeholder="Email (pour la confirmation)">
+                    <input type="tel" name="telephoneResponsable" placeholder="Téléphone">
+                    <input type="text" name="adresseResponsable" placeholder="Adresse postale">
+                    <input type="text" name="codePostalResponsable" placeholder="Code Postal">
+                    <input type="text" name="villeResponsable" placeholder="Ville">
                 </div>
                 <div id="adherent-info-container"></div>
                 <div class="nav-buttons">
@@ -147,19 +150,32 @@
             </div>
         </form>
 
-        <div id="loading" class="hidden">...</div>
-        <div id="successMessage" class="hidden">...</div>
-        <div id="errorMessage" class="hidden">...</div>
+        <div id="loading" class="hidden"> <div class="spinner"></div> <p>Envoi en cours...</p> </div>
+        <div id="successMessage" class="hidden">
+            <h2>Pré-inscription enregistrée !</h2>
+            <p>Merci ! Un email de confirmation vient de vous être envoyé.</p>
+            <p>Le montant de la cotisation est de <strong id="montantFinal"></strong>.</p>
+            <p class="warning" style="text-align: left;">La cotisation sera à régler par espèce ou par chèque à l'ordre de "Espérance Drouaise".<br>Veuillez la placer dans une enveloppe au nom et prénom de l'enfant, puis la remettre au club lors de la première séance.</p>
+        </div>
+        <div id="errorMessage" class="hidden"> <h2>Une erreur est survenue.</h2> <p>Veuillez contacter le club à <a href="mailto:ed28gym@gmail.com">ed28gym@gmail.com</a>.</p> </div>
     </div>
     
-    <div id="camera-modal" class="hidden">...</div>
+    <div id="camera-modal" class="hidden">
+        <video id="camera-feed" autoplay playsinline></video>
+        <canvas id="photo-canvas" class="hidden"></canvas>
+        <div class="camera-buttons">
+            <button id="capture-btn" class="btn">Capturer</button>
+            <button id="recapture-btn" class="btn hidden">Reprendre</button>
+            <button id="confirm-photo-btn" class="btn hidden">Confirmer</button>
+            <button id="cancel-camera-btn" class="btn btn-prev">Annuler</button>
+        </div>
+    </div>
 
     <!-- ======================= JAVASCRIPT CORRIGÉ ======================= -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzoDe8VcbxozPLjZTDsh8qs83P-ch6fMmKKz4L01qfy9adk6fjVBWp6boyGWQab7kMVTA/exec';
             
-            // ... (Déclaration des constantes)
             const form = document.getElementById('inscriptionForm');
             const steps = Array.from(document.querySelectorAll('.form-step'));
             const nextBtns = document.querySelectorAll('.btn-next');
@@ -175,32 +191,60 @@
             const certificatInput = document.getElementById('certificatMedical');
             
             let currentStep = 1;
-            let photoFilesMap = new Map(); // MODIFICATION : On utilise une Map pour lier photo et enfant
-            let currentlyActiveChildIndex = null; // Pour savoir pour quel enfant on gère une photo
+            let photoFilesMap = new Map();
+            let currentlyActiveChildIndex = null;
+            let stream;
 
-            // --- GESTION PHOTO (MAJEURE) ---
             const hiddenPhotoInput = document.getElementById('photo-file-input');
             const cameraModal = document.getElementById('camera-modal');
-            
+            const video = document.querySelector('#camera-modal video');
+            const canvas = document.querySelector('#camera-modal canvas');
+            const captureBtn = document.querySelector('#camera-modal #capture-btn');
+            const recaptureBtn = document.querySelector('#camera-modal #recapture-btn');
+            const confirmBtn = document.querySelector('#camera-modal #confirm-photo-btn');
+            const cancelBtn = document.querySelector('#camera-modal #cancel-camera-btn');
+
             adherentInfoContainer.addEventListener('click', (e) => {
                 const target = e.target;
                 if (target.classList.contains('choose-photo-btn')) {
                     currentlyActiveChildIndex = target.dataset.childIndex;
-                    hiddenPhotoInput.click(); // Déclenche l'input file caché
+                    hiddenPhotoInput.click();
                 }
                 if (target.classList.contains('take-photo-btn')) {
                     currentlyActiveChildIndex = target.dataset.childIndex;
-                    // ... (logique d'ouverture de la caméra)
+                    openCamera();
                 }
             });
-            
+
             hiddenPhotoInput.addEventListener('change', (e) => {
                 if (e.target.files.length > 0 && currentlyActiveChildIndex) {
                     photoFilesMap.set(currentlyActiveChildIndex, e.target.files[0]);
                     updatePhotoFileName(currentlyActiveChildIndex, e.target.files[0].name);
                 }
-                hiddenPhotoInput.value = ''; // Réinitialiser pour pouvoir sélectionner le même fichier à nouveau
+                hiddenPhotoInput.value = '';
             });
+
+            async function openCamera() {
+                try {
+                    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+                    video.srcObject = stream;
+                    cameraModal.classList.remove('hidden');
+                    video.classList.remove('hidden');
+                    canvas.classList.add('hidden');
+                    captureBtn.classList.remove('hidden');
+                    recaptureBtn.classList.add('hidden');
+                    confirmBtn.classList.add('hidden');
+                } catch (err) {
+                    alert("Impossible d'accéder à la caméra. Vérifiez les autorisations de votre navigateur.");
+                }
+            }
+
+            captureBtn.addEventListener('click', () => { canvas.width = video.videoWidth; canvas.height = video.videoHeight; canvas.getContext('2d').drawImage(video, 0, 0); video.classList.add('hidden'); canvas.classList.remove('hidden'); captureBtn.classList.add('hidden'); recaptureBtn.classList.remove('hidden'); confirmBtn.classList.remove('hidden'); });
+            recaptureBtn.addEventListener('click', () => { video.classList.remove('hidden'); canvas.classList.add('hidden'); captureBtn.classList.remove('hidden'); recaptureBtn.classList.add('hidden'); confirmBtn.classList.add('hidden'); });
+            confirmBtn.addEventListener('click', () => { canvas.toBlob(blob => { const newFile = new File([blob], `photo_cam_${currentlyActiveChildIndex}.jpg`, { type: 'image/jpeg' }); photoFilesMap.set(currentlyActiveChildIndex, newFile); updatePhotoFileName(currentlyActiveChildIndex, newFile.name); stopCamera(); }, 'image/jpeg'); });
+            cancelBtn.addEventListener('click', () => stopCamera());
+
+            function stopCamera() { if (stream) { stream.getTracks().forEach(track => track.stop()); } cameraModal.classList.add('hidden'); }
 
             function updatePhotoFileName(childIndex, fileName) {
                 const span = document.getElementById(`photo-file-name-${childIndex}`);
@@ -211,32 +255,82 @@
                 }
             }
 
-            // --- GESTION FORMULAIRE ---
             nextBtns.forEach(btn => btn.addEventListener('click', () => { if (validateStep(currentStep)) changeStep('next'); }));
             prevBtns.forEach(btn => btn.addEventListener('click', () => changeStep('prev')));
-            function changeStep(dir) { /* ... (inchangé) ... */ }
+            
+            function changeStep(dir) {
+                const activeStep = document.querySelector('.form-step.active');
+                let nextStepNumber = dir === 'next' ? currentStep + 1 : currentStep - 1;
+                activeStep.classList.remove('active');
+                if (dir === 'next') activeStep.classList.add('inactive-prev');
+                const nextStep = document.querySelector(`.form-step[data-step="${nextStepNumber}"]`);
+                if (nextStep) {
+                    nextStep.classList.remove('inactive-prev');
+                    nextStep.classList.add('active');
+                    currentStep = nextStepNumber;
+                }
+                updateProgressBar();
+            }
+            
             function updateProgressBar() { progressBar.style.width = `${((currentStep - 1) / (steps.length - 1)) * 100}%`; }
-
+            
             function validateStep(step) {
-                const currentStepElement = document.querySelector(`.form-step[data-step="${step}"]`);
-                const inputs = currentStepElement.querySelectorAll('input[required], select[required]');
-                for (const input of inputs) { if (!input.value && input.type !== 'radio' && input.type !== 'checkbox') { alert('Veuillez remplir tous les champs.'); return false; } if ((input.type === 'radio' || input.type === 'checkbox') && !document.querySelector(`input[name="${input.name}"]:checked`)) { alert('Veuillez faire un choix.'); return false; } }
+                const stepElement = document.querySelector(`.form-step[data-step="${step}"]`);
+                const requiredInputs = stepElement.querySelectorAll('[required]');
+
+                for (const input of requiredInputs) {
+                    if (input.type === 'radio') {
+                        const radioGroup = stepElement.querySelectorAll(`input[name="${input.name}"]`);
+                        if (!Array.from(radioGroup).some(radio => radio.checked)) {
+                            alert('Veuillez faire un choix pour continuer.');
+                            return false;
+                        }
+                    } else if (input.type === 'checkbox') {
+                        if (!input.checked) {
+                            alert('Veuillez accepter les conditions pour continuer.');
+                            return false;
+                        }
+                    } else if (!input.value.trim()) {
+                        alert(`Veuillez remplir le champ "${input.placeholder || input.name}"`);
+                        return false;
+                    }
+                }
                 
                 if (step === 2) {
                     const adherentCount = getAdherentCount();
-                    for (let i = 1; i <= adherentCount; i++) {
-                        if (!photoFilesMap.has(String(i))) {
-                            alert(`Veuillez fournir une photo d'identité pour l'adhérent n°${i}.`);
-                            return false;
-                        }
+                    if (photoFilesMap.size < adherentCount) {
+                        alert(`Veuillez fournir une photo pour chaque adhérent (${photoFilesMap.size}/${adherentCount}).`);
+                        return false;
                     }
                 }
                 return true;
             }
 
-            // Génère les champs pour chaque enfant, y compris les boutons de photo
+            typeAdherentRadios.forEach(radio => radio.addEventListener('change', (e) => {
+                const type = e.target.value;
+                const respInputs = sectionResponsable.querySelectorAll('input');
+                if (type === 'mineur') {
+                    cotisationMineurSelect.classList.remove('hidden');
+                    sectionResponsable.classList.remove('hidden');
+                    respInputs.forEach(i => i.setAttribute('required', ''));
+                    generateAdherentFields(parseInt(numEnfantsSelect.value));
+                } else {
+                    cotisationMineurSelect.classList.add('hidden');
+                    sectionResponsable.classList.add('hidden');
+                    respInputs.forEach(i => i.removeAttribute('required'));
+                    generateAdherentFields(1);
+                }
+                updateCotisation();
+            }));
+            
+            numEnfantsSelect.addEventListener('change', () => {
+                updateCotisation();
+                generateAdherentFields(parseInt(numEnfantsSelect.value));
+            });
+
             function generateAdherentFields(count) {
                 adherentInfoContainer.innerHTML = '';
+                photoFilesMap.clear();
                 const type = document.querySelector('input[name="typeAdherent"]:checked')?.value;
                 for (let i = 1; i <= count; i++) {
                     const isMajeur = type === 'majeur';
@@ -249,10 +343,9 @@
                         <input type="text" name="nom_${i}" placeholder="Nom" required>
                         <label for="dateNaissance_${i}">Date de naissance :</label>
                         <input type="date" id="dateNaissance_${i}" name="dateNaissance_${i}" required>
-                        ${isMajeur ? `<input type="email" name="email_${i}" placeholder="Email (pour confirmation)" required> ... (autres champs majeurs)` : ''}
-                        
+                        ${isMajeur ? `<input type="email" name="email_${i}" placeholder="Email (pour confirmation)" required><input type="text" name="adresse_${i}" placeholder="Adresse postale" required><input type="text" name="codePostal_${i}" placeholder="Code Postal" required><input type="text" name="ville_${i}" placeholder="Ville" required>` : ''}
                         <div class="file-upload-wrapper">
-                            <p>Photo d'identité :</p>
+                            <p style="margin-bottom: 10px;">Photo d'identité :</p>
                             <button type="button" class="btn choose-photo-btn" data-child-index="${i}">Choisir un fichier</button>
                             <button type="button" class="btn take-photo-btn" data-child-index="${i}">Prendre une photo</button>
                             <span id="photo-file-name-${i}">Aucune photo choisie</span>
@@ -260,31 +353,84 @@
                     `;
                     adherentInfoContainer.appendChild(fieldGroup);
                 }
+                 updatePhotoFileName();
             }
-            
-            // ... (logique de typeAdherent, cotisation, etc. inchangée mais simplifiée)
-            typeAdherentRadios.forEach(radio => radio.addEventListener('change', () => { /* ... */ }));
-            numEnfantsSelect.addEventListener('change', () => { /* ... */ });
 
-            // ... (logique de soumission)
+            reponseQuestionnaireRadios.forEach(radio => radio.addEventListener('change', (e) => {
+                const emailSignatureInfo = document.getElementById('email-signature-info');
+                if (e.target.value === 'oui') {
+                    certificatContainer.classList.remove('hidden');
+                    certificatInput.setAttribute('required', '');
+                    emailSignatureInfo.classList.add('hidden');
+                } else {
+                    certificatContainer.classList.add('hidden');
+                    certificatInput.removeAttribute('required');
+                    emailSignatureInfo.classList.remove('hidden');
+                }
+            }));
+            
+            function updateCotisation() {
+                const type = document.querySelector('input[name="typeAdherent"]:checked')?.value;
+                let montant = 130;
+                if (type === 'mineur') { const nbEnfants = parseInt(numEnfantsSelect.value); const tarifs = { 1: 130, 2: 210, 3: 230, 4: 250 }; montant = tarifs[nbEnfants] || 250; }
+                document.getElementById('montantTotal').textContent = `${montant} €`;
+            }
+
+            const getAdherentCount = () => { const type = document.querySelector('input[name="typeAdherent"]:checked')?.value; return type === 'majeur' ? 1 : parseInt(numEnfantsSelect.value, 10); };
+            certificatInput.addEventListener('change', (e) => { document.getElementById('certificat-file-name').textContent = e.target.files.length > 0 ? `${e.target.files.length} certificat(s) choisi(s)` : "Aucun fichier choisi"; });
+
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                // ... (affichage du loading)
-                
-                // NOUVEAU : Construire le tableau de photos dans le bon ordre
-                const orderedPhotoFiles = [];
-                const adherentCount = getAdherentCount();
-                for (let i = 1; i <= adherentCount; i++) {
-                    orderedPhotoFiles.push(photoFilesMap.get(String(i)));
+                document.getElementById('loading').classList.remove('hidden');
+                form.classList.add('hidden');
+                try {
+                    const formData = new FormData(form);
+                    const adherentCount = getAdherentCount();
+                    const orderedPhotoFiles = [];
+                    for (let i = 1; i <= adherentCount; i++) { orderedPhotoFiles.push(photoFilesMap.get(String(i))); }
+
+                    const fileToBase64 = (file) => new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve({ base64: reader.result, mimeType: file.type, fileName: file.name }); reader.onerror = reject; });
+                    const photosBase64 = await Promise.all(orderedPhotoFiles.map(f => fileToBase64(f)));
+                    
+                    const data = {
+                        typeAdherent: formData.get('typeAdherent'),
+                        nomResponsable: formData.get('nomResponsable'),
+                        emailResponsable: formData.get('emailResponsable'),
+                        telephoneResponsable: formData.get('telephoneResponsable'),
+                        adresseResponsable: formData.get('adresseResponsable'),
+                        codePostalResponsable: formData.get('codePostalResponsable'),
+                        villeResponsable: formData.get('villeResponsable'),
+                        montantCotisation: document.getElementById('montantTotal').textContent,
+                        reponseSante: formData.get('reponseQuestionnaire'),
+                        droitImageAccepte: formData.get('droitImage') === 'on',
+                        reglementAccepte: formData.get('reglement') === 'on',
+                        adherents: [],
+                        photos: photosBase64,
+                        certificats: await Promise.all(Array.from(formData.getAll('certificatMedical')).filter(f => f.size > 0).map(f => fileToBase64(f)))
+                    };
+                    
+                    for (let i = 1; i <= adherentCount; i++) {
+                        data.adherents.push({
+                            prenom: formData.get(`prenom_${i}`), nom: formData.get(`nom_${i}`), dateNaissance: formData.get(`dateNaissance_${i}`),
+                            email: formData.get(`email_${i}`), adresse: formData.get(`adresse_${i}`),
+                            codePostal: formData.get(`codePostal_${i}`), ville: formData.get(`ville_${i}`),
+                        });
+                    }
+
+                    const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
+                    const result = await response.json();
+                    
+                    document.getElementById('loading').classList.add('hidden');
+                    if (result.status === 'success') { 
+                        document.getElementById('montantFinal').textContent = data.montantCotisation;
+                        document.getElementById('successMessage').classList.remove('hidden');
+                    } else { throw new Error(result.message); }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('errorMessage').classList.remove('hidden');
                 }
-                
-                // Convertir `orderedPhotoFiles` en base64
-                data.photos = await Promise.all(orderedPhotoFiles.map(f => fileToBase64(f)));
-
-                // ... (le reste de la soumission `fetch` reste identique)
             });
-
-            // ... (Autres fonctions utilitaires: getAdherentCount, fileToBase64, etc.)
         });
     </script>
 </body>
