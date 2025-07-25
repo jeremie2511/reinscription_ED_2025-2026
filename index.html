@@ -125,12 +125,8 @@
                 <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
                 <div class="radio-group-vertical">
                     <label><input type="radio" name="reponseQuestionnaire" value="non" required> J'atteste avoir répondu "NON" à toutes les questions.</label>
+                    <small id="email-signature-info" class="hidden" style="display:block; margin-top:-5px; margin-bottom:10px; padding-left:15px; color:#555;">Un e-mail vous sera envoyé pour signer électroniquement cette attestation.</small>
                     <label><input type="radio" name="reponseQuestionnaire" value="oui" required> J'ai répondu "OUI" à au moins une question (certificat médical requis).</label>
-                </div>
-                <div id="signature-container" class="hidden" style="margin-top: 20px;">
-                    <label for="signature">Signature (tapez votre nom complet) :</label>
-                    <input type="text" id="signature" name="signature" placeholder="Prénom NOM">
-                    <small>En signant, vous (ou le responsable légal) attestez sur l'honneur avoir répondu NON à l'ensemble des questions du questionnaire de santé.</small>
                 </div>
                 <div id="certificat-medical-container" class="hidden file-upload-wrapper">
                     <p class="warning">Veuillez joindre un certificat médical mentionnant l'aptitude à la "pratique de la gymnastique en compétition".</p>
@@ -185,9 +181,9 @@
         <div id="loading" class="hidden"> <div class="spinner"></div> <p>Envoi en cours...</p> </div>
         <div id="successMessage" class="hidden">
             <h2>Pré-inscription enregistrée !</h2>
-            <p>Merci ! Un email de confirmation vient de vous être envoyé.</p>
-            <p>Le montant de la cotisation est de <strong id="montantFinal"></strong>.</p>
-            <p class="warning" style="text-align: left;">La cotisation sera à régler par espèce ou par chèque à l'ordre de "Espérance Drouaise".<br>Veuillez la placer dans une enveloppe au nom et prénom de l'enfant, puis la remettre au club lors de la première séance.</p>
+            <p>Merci ! Nous avons bien reçu vos informations.</p>
+            <p class="warning" style="text-align: left;">La cotisation de <strong id="montantFinal"></strong> sera à régler par espèce ou par chèque à l'ordre de "Espérance Drouaise".<br>Veuillez la placer dans une enveloppe au nom et prénom de l'enfant, puis la remettre au club lors de la première séance.</p>
+            <p>Un email de confirmation vous a été envoyé.</p>
         </div>
         <div id="errorMessage" class="hidden"> <h2>Une erreur est survenue.</h2> <p>Veuillez contacter le club à <a href="mailto:ed28gym@gmail.com">ed28gym@gmail.com</a>.</p> </div>
     </div>
@@ -218,8 +214,6 @@
             const reponseQuestionnaireRadios = document.querySelectorAll('input[name="reponseQuestionnaire"]');
             const certificatContainer = document.getElementById('certificat-medical-container');
             const certificatInput = document.getElementById('certificatMedical');
-            const signatureContainer = document.getElementById('signature-container');
-            const signatureInput = document.getElementById('signature');
             const cotisationMineurSelect = document.getElementById('cotisation-mineur-select');
             const numEnfantsSelect = document.getElementById('numEnfants');
             const montantTotalDisplay = document.getElementById('montantTotal');
@@ -276,16 +270,15 @@
             }));
             
             reponseQuestionnaireRadios.forEach(radio => radio.addEventListener('change', (e) => {
+                const emailSignatureInfo = document.getElementById('email-signature-info');
                 if (e.target.value === 'oui') {
                     certificatContainer.classList.remove('hidden');
                     certificatInput.setAttribute('required', '');
-                    signatureContainer.classList.add('hidden');
-                    signatureInput.removeAttribute('required');
-                } else {
+                    emailSignatureInfo.classList.add('hidden');
+                } else { // 'non'
                     certificatContainer.classList.add('hidden');
                     certificatInput.removeAttribute('required');
-                    signatureContainer.classList.remove('hidden');
-                    signatureInput.setAttribute('required', '');
+                    emailSignatureInfo.classList.remove('hidden');
                 }
             }));
             
@@ -335,7 +328,6 @@
 
                 try {
                     const formData = new FormData(form);
-                    // --- CORRECTION ICI --- : Envoi des champs d'adresse du responsable séparément
                     const data = {
                         typeAdherent: formData.get('typeAdherent'),
                         nomResponsable: formData.get('nomResponsable'),
@@ -345,7 +337,8 @@
                         codePostalResponsable: formData.get('codePostalResponsable'),
                         villeResponsable: formData.get('villeResponsable'),
                         montantCotisation: montantTotalDisplay.textContent,
-                        attestationSante: formData.get('reponseQuestionnaire') === 'non' ? `Attestation sur l'honneur signée par ${formData.get('signature')}` : "Certificat Fourni",
+                        // MODIFICATION ICI : Envoi du type de réponse santé, pas du texte
+                        reponseSante: formData.get('reponseQuestionnaire'),
                         droitImageAccepte: formData.get('droitImage') === 'on',
                         reglementAccepte: formData.get('reglement') === 'on',
                         adherents: []
@@ -355,10 +348,8 @@
                     for (let i = 1; i <= count; i++) {
                         data.adherents.push({
                             prenom: formData.get(`prenom_${i}`), nom: formData.get(`nom_${i}`), dateNaissance: formData.get(`dateNaissance_${i}`),
-                            email: formData.get(`email_${i}`) || 'N/A', 
-                            adresse: formData.get(`adresse_${i}`),
-                            codePostal: formData.get(`codePostal_${i}`),
-                            ville: formData.get(`ville_${i}`),
+                            email: formData.get(`email_${i}`), adresse: formData.get(`adresse_${i}`),
+                            codePostal: formData.get(`codePostal_${i}`), ville: formData.get(`ville_${i}`),
                         });
                     }
                     
@@ -370,7 +361,9 @@
                     const result = await response.json();
                     
                     document.getElementById('loading').classList.add('hidden');
-                    if (result.status === 'success') { document.getElementById('montantFinal').textContent = data.montantCotisation; document.getElementById('successMessage').classList.remove('hidden');
+                    if (result.status === 'success') { 
+                        document.getElementById('montantFinal').textContent = data.montantCotisation;
+                        document.getElementById('successMessage').classList.remove('hidden');
                     } else { throw new Error(result.message); }
                 } catch (error) {
                     console.error('Erreur lors de la soumission:', error);
