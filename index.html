@@ -206,7 +206,6 @@
     <!-- ======================= JAVASCRIPT CORRIGÉ ET OPTIMISÉ ======================= -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // CORRECTION ICI : Pensez à remplacer par votre propre URL de script si vous changez de projet.
             const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzoDe8VcbxozPLjZTDsh8qs83P-ch6fMmKKz4L01qfy9adk6fjVBWp6boyGWQab7kMVTA/exec';
             
             const form = document.getElementById('inscriptionForm');
@@ -236,10 +235,9 @@
             const cancelBtn = document.getElementById('cancel-camera-btn');
             
             let currentStep = 1;
-            let photoFiles = []; // Tableau pour stocker les photos (fichiers + caméra)
+            let photoFiles = [];
             let stream;
 
-            // --- GESTION CAMÉRA ---
             document.getElementById('take-photo-btn').addEventListener('click', async () => { try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } }); video.srcObject = stream; cameraModal.classList.remove('hidden'); video.classList.remove('hidden'); canvas.classList.add('hidden'); recaptureBtn.classList.add('hidden'); confirmBtn.classList.add('hidden'); captureBtn.classList.remove('hidden'); } catch (err) { console.error("Erreur caméra: ", err); alert("Impossible d'accéder à la caméra. Vérifiez les autorisations de votre navigateur."); } });
             captureBtn.addEventListener('click', () => { canvas.width = video.videoWidth; canvas.height = video.videoHeight; canvas.getContext('2d').drawImage(video, 0, 0); video.classList.add('hidden'); canvas.classList.remove('hidden'); captureBtn.classList.add('hidden'); recaptureBtn.classList.remove('hidden'); confirmBtn.classList.remove('hidden'); });
             recaptureBtn.addEventListener('click', () => { video.classList.remove('hidden'); canvas.classList.add('hidden'); recaptureBtn.classList.add('hidden'); confirmBtn.classList.add('hidden'); captureBtn.classList.remove('hidden'); });
@@ -247,31 +245,16 @@
             cancelBtn.addEventListener('click', stopCamera);
             function stopCamera() { if (stream) { stream.getTracks().forEach(track => track.stop()); } cameraModal.classList.add('hidden'); }
             
-            // --- GESTION FORMULAIRE ---
             nextBtns.forEach(button => { button.addEventListener('click', () => { if (validateStep(currentStep)) { changeStep('next'); } }); });
             prevBtns.forEach(button => { button.addEventListener('click', () => { changeStep('prev'); }); });
             function changeStep(direction) { const activeStep = document.querySelector('.form-step.active'); let nextStepNumber = (direction === 'next') ? currentStep + 1 : currentStep - 1; activeStep.classList.remove('active'); if (direction === 'next') activeStep.classList.add('inactive-prev'); const nextStep = document.querySelector(`.form-step[data-step="${nextStepNumber}"]`); if (nextStep) { nextStep.classList.remove('inactive-prev'); nextStep.classList.add('active'); currentStep = nextStepNumber; } updateProgressBar(); }
             function updateProgressBar() { progressBar.style.width = `${((currentStep - 1) / (steps.length - 1)) * 100}%`; }
             
-            // CORRECTION ICI : Validation améliorée
             function validateStep(step) {
                 const currentStepElement = document.querySelector(`.form-step[data-step="${step}"]`);
                 const inputs = currentStepElement.querySelectorAll('input[required]:not([type=file]), select[required]');
-                
-                // Validation des champs textes, radios, etc.
-                for (const input of inputs) {
-                    if ((input.type === 'radio' || input.type === 'checkbox') && !document.querySelector(`input[name="${input.name}"]:checked`)) { alert('Veuillez cocher une option pour continuer.'); return false; } 
-                    else if (!input.value) { alert('Veuillez remplir tous les champs obligatoires.'); return false; }
-                }
-
-                // Validation spécifique pour l'étape des photos
-                if (step === 4) {
-                    const adherentCount = getAdherentCount();
-                    if (photoFiles.length < adherentCount) {
-                        alert(`Veuillez fournir une photo d'identité pour chaque adhérent (${photoFiles.length}/${adherentCount} fournie(s)).`);
-                        return false;
-                    }
-                }
+                for (const input of inputs) { if ((input.type === 'radio' || input.type === 'checkbox') && !document.querySelector(`input[name="${input.name}"]:checked`)) { alert('Veuillez cocher une option pour continuer.'); return false; } else if (!input.value) { alert('Veuillez remplir tous les champs obligatoires.'); return false; } }
+                if (step === 4) { const adherentCount = getAdherentCount(); if (photoFiles.length < adherentCount) { alert(`Veuillez fournir une photo d'identité pour chaque adhérent (${photoFiles.length}/${adherentCount} fournie(s)).`); return false; } }
                 return true;
             }
 
@@ -340,11 +323,7 @@
                 }
             }
 
-            const getAdherentCount = () => {
-                const type = document.querySelector('input[name="typeAdherent"]:checked')?.value;
-                return type === 'majeur' ? 1 : parseInt(numEnfantsSelect.value);
-            };
-            
+            const getAdherentCount = () => { const type = document.querySelector('input[name="typeAdherent"]:checked')?.value; return type === 'majeur' ? 1 : parseInt(numEnfantsSelect.value); };
             photoInput.addEventListener('change', (e) => { photoFiles.push(...e.target.files); updatePhotoFileName(); });
             function updatePhotoFileName() { document.getElementById('photo-file-name').textContent = photoFiles.length > 0 ? `${photoFiles.length} photo(s) prête(s)` : "Aucune photo choisie"; }
             certificatInput.addEventListener('change', (e) => { document.getElementById('certificat-file-name').textContent = e.target.files.length > 0 ? `${e.target.files.length} certificat(s) choisi(s)` : "Aucun fichier choisi"; });
@@ -356,12 +335,15 @@
 
                 try {
                     const formData = new FormData(form);
+                    // --- CORRECTION ICI --- : Envoi des champs d'adresse du responsable séparément
                     const data = {
                         typeAdherent: formData.get('typeAdherent'),
                         nomResponsable: formData.get('nomResponsable'),
                         emailResponsable: formData.get('emailResponsable'),
                         telephoneResponsable: formData.get('telephoneResponsable'),
-                        adresseResponsable: `${formData.get('adresseResponsable') || ''}, ${formData.get('codePostalResponsable') || ''} ${formData.get('villeResponsable') || ''}`,
+                        adresseResponsable: formData.get('adresseResponsable'),
+                        codePostalResponsable: formData.get('codePostalResponsable'),
+                        villeResponsable: formData.get('villeResponsable'),
                         montantCotisation: montantTotalDisplay.textContent,
                         attestationSante: formData.get('reponseQuestionnaire') === 'non' ? `Attestation sur l'honneur signée par ${formData.get('signature')}` : "Certificat Fourni",
                         droitImageAccepte: formData.get('droitImage') === 'on',
@@ -374,7 +356,7 @@
                         data.adherents.push({
                             prenom: formData.get(`prenom_${i}`), nom: formData.get(`nom_${i}`), dateNaissance: formData.get(`dateNaissance_${i}`),
                             email: formData.get(`email_${i}`) || 'N/A', 
-                            adresse: formData.get(`adresse_${i}`) || data.adresseResponsable,
+                            adresse: formData.get(`adresse_${i}`),
                             codePostal: formData.get(`codePostal_${i}`),
                             ville: formData.get(`ville_${i}`),
                         });
