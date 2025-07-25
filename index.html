@@ -26,7 +26,7 @@
         .form-step.active { position: relative; opacity: 1; transform: translateX(0); pointer-events: auto; }
         .form-step.inactive-prev { transform: translateX(-100%); }
         input[type="text"], input[type="email"], input[type="tel"], input[type="date"], select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; margin-bottom: 15px; font-size: 1rem; }
-        label { display: block; margin-bottom: 5px; font-weight: 500; color: var(--dark-grey); } /* Style pour les labels */
+        label { display: block; margin-bottom: 5px; font-weight: 500; color: var(--dark-grey); }
         .radio-card-group { display: flex; gap: 15px; justify-content: center; margin: 20px 0; }
         .radio-card { flex: 1; background: #f9f9f9; border: 2px solid var(--border-color); border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.2s ease; }
         .radio-card input[type="radio"] { display: none; }
@@ -127,14 +127,11 @@
                     <label><input type="radio" name="reponseQuestionnaire" value="non" required> J'atteste avoir répondu "NON" à toutes les questions.</label>
                     <label><input type="radio" name="reponseQuestionnaire" value="oui" required> J'ai répondu "OUI" à au moins une question (certificat médical requis).</label>
                 </div>
-                
-                <!-- MODIFICATION ICI : Champ de signature électronique -->
                 <div id="signature-container" class="hidden" style="margin-top: 20px;">
                     <label for="signature">Signature (tapez votre nom complet) :</label>
                     <input type="text" id="signature" name="signature" placeholder="Prénom NOM">
                     <small>En signant, vous (ou le responsable légal) attestez sur l'honneur avoir répondu NON à l'ensemble des questions du questionnaire de santé.</small>
                 </div>
-
                 <div id="certificat-medical-container" class="hidden file-upload-wrapper">
                     <p class="warning">Veuillez joindre un certificat médical mentionnant l'aptitude à la "pratique de la gymnastique en compétition".</p>
                     <label for="certificatMedical" class="btn">Téléverser le(s) certificat(s)</label>
@@ -206,12 +203,12 @@
         </div>
     </div>
 
-    <!-- ======================= JAVASCRIPT INTÉGRÉ ======================= -->
+    <!-- ======================= JAVASCRIPT CORRIGÉ ET OPTIMISÉ ======================= -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // CORRECTION ICI : Pensez à remplacer par votre propre URL de script si vous changez de projet.
             const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzoDe8VcbxozPLjZTDsh8qs83P-ch6fMmKKz4L01qfy9adk6fjVBWp6boyGWQab7kMVTA/exec';
             
-            // ... (déclaration des constantes du formulaire)
             const form = document.getElementById('inscriptionForm');
             const steps = Array.from(document.querySelectorAll('.form-step'));
             const nextBtns = document.querySelectorAll('.btn-next');
@@ -222,19 +219,14 @@
             const reponseQuestionnaireRadios = document.querySelectorAll('input[name="reponseQuestionnaire"]');
             const certificatContainer = document.getElementById('certificat-medical-container');
             const certificatInput = document.getElementById('certificatMedical');
-            const signatureContainer = document.getElementById('signature-container'); // MODIFICATION ICI
-            const signatureInput = document.getElementById('signature'); // MODIFICATION ICI
+            const signatureContainer = document.getElementById('signature-container');
+            const signatureInput = document.getElementById('signature');
             const cotisationMineurSelect = document.getElementById('cotisation-mineur-select');
             const numEnfantsSelect = document.getElementById('numEnfants');
             const montantTotalDisplay = document.getElementById('montantTotal');
             const montantFinalDisplay = document.getElementById('montantFinal');
             const adherentInfoContainer = document.getElementById('adherent-info-container');
             const photoInput = document.getElementById('photoIdentite');
-            
-            let currentStep = 1;
-            let photoFiles = [];
-
-            // ... (gestion caméra inchangée)
             const cameraModal = document.getElementById('camera-modal');
             const video = document.getElementById('camera-feed');
             const canvas = document.getElementById('photo-canvas');
@@ -242,25 +234,44 @@
             const recaptureBtn = document.getElementById('recapture-btn');
             const confirmBtn = document.getElementById('confirm-photo-btn');
             const cancelBtn = document.getElementById('cancel-camera-btn');
+            
+            let currentStep = 1;
+            let photoFiles = []; // Tableau pour stocker les photos (fichiers + caméra)
             let stream;
-            document.getElementById('take-photo-btn').addEventListener('click', async () => { try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } }); video.srcObject = stream; cameraModal.classList.remove('hidden'); video.classList.remove('hidden'); canvas.classList.add('hidden'); recaptureBtn.classList.add('hidden'); confirmBtn.classList.add('hidden'); captureBtn.classList.remove('hidden'); } catch (err) { console.error("Erreur caméra: ", err); alert("Impossible d'accéder à la caméra."); } });
+
+            // --- GESTION CAMÉRA ---
+            document.getElementById('take-photo-btn').addEventListener('click', async () => { try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } }); video.srcObject = stream; cameraModal.classList.remove('hidden'); video.classList.remove('hidden'); canvas.classList.add('hidden'); recaptureBtn.classList.add('hidden'); confirmBtn.classList.add('hidden'); captureBtn.classList.remove('hidden'); } catch (err) { console.error("Erreur caméra: ", err); alert("Impossible d'accéder à la caméra. Vérifiez les autorisations de votre navigateur."); } });
             captureBtn.addEventListener('click', () => { canvas.width = video.videoWidth; canvas.height = video.videoHeight; canvas.getContext('2d').drawImage(video, 0, 0); video.classList.add('hidden'); canvas.classList.remove('hidden'); captureBtn.classList.add('hidden'); recaptureBtn.classList.remove('hidden'); confirmBtn.classList.remove('hidden'); });
             recaptureBtn.addEventListener('click', () => { video.classList.remove('hidden'); canvas.classList.add('hidden'); recaptureBtn.classList.add('hidden'); confirmBtn.classList.add('hidden'); captureBtn.classList.remove('hidden'); });
-            confirmBtn.addEventListener('click', () => { canvas.toBlob(blob => { const newFile = new File([blob], `photo_identite_${Date.now()}.jpg`, { type: 'image/jpeg' }); photoFiles.push(newFile); updatePhotoFileName(); stopCamera(); }, 'image/jpeg'); });
+            confirmBtn.addEventListener('click', () => { canvas.toBlob(blob => { const newFile = new File([blob], `photo_camera_${Date.now()}.jpg`, { type: 'image/jpeg' }); photoFiles.push(newFile); updatePhotoFileName(); stopCamera(); }, 'image/jpeg'); });
             cancelBtn.addEventListener('click', stopCamera);
             function stopCamera() { if (stream) { stream.getTracks().forEach(track => track.stop()); } cameraModal.classList.add('hidden'); }
             
-            // ... (gestion formulaire, navigation)
+            // --- GESTION FORMULAIRE ---
             nextBtns.forEach(button => { button.addEventListener('click', () => { if (validateStep(currentStep)) { changeStep('next'); } }); });
             prevBtns.forEach(button => { button.addEventListener('click', () => { changeStep('prev'); }); });
             function changeStep(direction) { const activeStep = document.querySelector('.form-step.active'); let nextStepNumber = (direction === 'next') ? currentStep + 1 : currentStep - 1; activeStep.classList.remove('active'); if (direction === 'next') activeStep.classList.add('inactive-prev'); const nextStep = document.querySelector(`.form-step[data-step="${nextStepNumber}"]`); if (nextStep) { nextStep.classList.remove('inactive-prev'); nextStep.classList.add('active'); currentStep = nextStepNumber; } updateProgressBar(); }
             function updateProgressBar() { progressBar.style.width = `${((currentStep - 1) / (steps.length - 1)) * 100}%`; }
             
+            // CORRECTION ICI : Validation améliorée
             function validateStep(step) {
                 const currentStepElement = document.querySelector(`.form-step[data-step="${step}"]`);
-                if (step === 4 && photoFiles.length === 0) { alert('Veuillez téléverser ou prendre au moins une photo d\'identité.'); return false; }
                 const inputs = currentStepElement.querySelectorAll('input[required]:not([type=file]), select[required]');
-                for(const input of inputs) { if ((input.type === 'radio' || input.type === 'checkbox') && !document.querySelector(`input[name="${input.name}"]:checked`)) { alert('Veuillez cocher une option.'); return false; } else if (!input.value) { alert('Veuillez remplir tous les champs.'); return false; } }
+                
+                // Validation des champs textes, radios, etc.
+                for (const input of inputs) {
+                    if ((input.type === 'radio' || input.type === 'checkbox') && !document.querySelector(`input[name="${input.name}"]:checked`)) { alert('Veuillez cocher une option pour continuer.'); return false; } 
+                    else if (!input.value) { alert('Veuillez remplir tous les champs obligatoires.'); return false; }
+                }
+
+                // Validation spécifique pour l'étape des photos
+                if (step === 4) {
+                    const adherentCount = getAdherentCount();
+                    if (photoFiles.length < adherentCount) {
+                        alert(`Veuillez fournir une photo d'identité pour chaque adhérent (${photoFiles.length}/${adherentCount} fournie(s)).`);
+                        return false;
+                    }
+                }
                 return true;
             }
 
@@ -281,14 +292,13 @@
                 updateCotisation();
             }));
             
-            // MODIFICATION ICI : Logique d'affichage de la signature
             reponseQuestionnaireRadios.forEach(radio => radio.addEventListener('change', (e) => {
                 if (e.target.value === 'oui') {
                     certificatContainer.classList.remove('hidden');
                     certificatInput.setAttribute('required', '');
                     signatureContainer.classList.add('hidden');
                     signatureInput.removeAttribute('required');
-                } else { // 'non'
+                } else {
                     certificatContainer.classList.add('hidden');
                     certificatInput.removeAttribute('required');
                     signatureContainer.classList.remove('hidden');
@@ -317,10 +327,10 @@
                         ${title}
                         <input type="text" name="prenom_${i}" placeholder="Prénom" required>
                         <input type="text" name="nom_${i}" placeholder="Nom" required>
-                        <label for="dateNaissance_${i}">Date de naissance :</label> <!-- MODIFICATION ICI -->
+                        <label for="dateNaissance_${i}">Date de naissance :</label>
                         <input type="date" id="dateNaissance_${i}" name="dateNaissance_${i}" required>
                         ${isMajeur ? `
-                            <input type="email" name="email_${i}" placeholder="Email de l'adhérent (pour la confirmation)" required>
+                            <input type="email" name="email_${i}" placeholder="Email de l'adhérent (pour confirmation)" required>
                             <input type="text" name="adresse_${i}" placeholder="Adresse postale" required>
                             <input type="text" name="codePostal_${i}" placeholder="Code Postal" required>
                             <input type="text" name="ville_${i}" placeholder="Ville" required>
@@ -329,6 +339,11 @@
                     adherentInfoContainer.appendChild(fieldGroup);
                 }
             }
+
+            const getAdherentCount = () => {
+                const type = document.querySelector('input[name="typeAdherent"]:checked')?.value;
+                return type === 'majeur' ? 1 : parseInt(numEnfantsSelect.value);
+            };
             
             photoInput.addEventListener('change', (e) => { photoFiles.push(...e.target.files); updatePhotoFileName(); });
             function updatePhotoFileName() { document.getElementById('photo-file-name').textContent = photoFiles.length > 0 ? `${photoFiles.length} photo(s) prête(s)` : "Aucune photo choisie"; }
@@ -346,23 +361,22 @@
                         nomResponsable: formData.get('nomResponsable'),
                         emailResponsable: formData.get('emailResponsable'),
                         telephoneResponsable: formData.get('telephoneResponsable'),
-                        adresseResponsable: formData.get('adresseResponsable'),
-                        codePostalResponsable: formData.get('codePostalResponsable'),
-                        villeResponsable: formData.get('villeResponsable'),
+                        adresseResponsable: `${formData.get('adresseResponsable') || ''}, ${formData.get('codePostalResponsable') || ''} ${formData.get('villeResponsable') || ''}`,
                         montantCotisation: montantTotalDisplay.textContent,
-                        attestationSante: formData.get('reponseQuestionnaire') === 'non' ? `Attestation sur l'honneur signée par ${formData.get('signature')}` : "Certificat Fourni", // MODIFICATION ICI
+                        attestationSante: formData.get('reponseQuestionnaire') === 'non' ? `Attestation sur l'honneur signée par ${formData.get('signature')}` : "Certificat Fourni",
                         droitImageAccepte: formData.get('droitImage') === 'on',
                         reglementAccepte: formData.get('reglement') === 'on',
                         adherents: []
                     };
                     
-                    const count = data.typeAdherent === 'majeur' ? 1 : parseInt(formData.get('numEnfants'));
+                    const count = getAdherentCount();
                     for (let i = 1; i <= count; i++) {
                         data.adherents.push({
                             prenom: formData.get(`prenom_${i}`), nom: formData.get(`nom_${i}`), dateNaissance: formData.get(`dateNaissance_${i}`),
-                            email: formData.get(`email_${i}`) || 'N/A', adresse: formData.get(`adresse_${i}`) || (data.typeAdherent === 'majeur' ? '' : data.adresseResponsable),
-                            codePostal: formData.get(`codePostal_${i}`) || (data.typeAdherent === 'majeur' ? '' : data.codePostalResponsable),
-                            ville: formData.get(`ville_${i}`) || (data.typeAdherent === 'majeur' ? '' : data.villeResponsable),
+                            email: formData.get(`email_${i}`) || 'N/A', 
+                            adresse: formData.get(`adresse_${i}`) || data.adresseResponsable,
+                            codePostal: formData.get(`codePostal_${i}`),
+                            ville: formData.get(`ville_${i}`),
                         });
                     }
                     
