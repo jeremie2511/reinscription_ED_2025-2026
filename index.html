@@ -8,7 +8,7 @@
     <!-- ======================= CSS INTÉGRÉ ======================= -->
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
-        :root { /* Variables de couleurs */
+        :root {
             --primary-color: #005a9c; --secondary-color: #28a745; --light-grey: #f4f7f6;
             --dark-grey: #555; --border-color: #ddd; --bg-color: #ffffff;
         }
@@ -22,9 +22,9 @@
         .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 30px; height: 10px; margin-bottom: 30px; }
         .progress-bar-fill { height: 100%; background-color: var(--secondary-color); border-radius: 30px; width: 0%; transition: width 0.4s ease-in-out; }
         #inscriptionForm { position: relative; min-height: 400px; }
-        .form-step { display: none; } /* On utilise display none pour une gestion plus simple */
+        .form-step { display: none; }
         .form-step.active { display: block; animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         input[type="text"], input[type="email"], input[type="tel"], input[type="date"], select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; box-sizing: border-box; margin-bottom: 15px; font-size: 1rem; }
         label { display: block; margin-bottom: 5px; font-weight: 500; color: var(--dark-grey); }
         .radio-card-group { display: flex; gap: 15px; }
@@ -63,7 +63,8 @@
         </header>
         <div class="progress-bar"><div class="progress-bar-fill" id="progressBar"></div></div>
         <input type="file" id="photo-file-input" class="hidden" accept="image/*">
-        <form id="inscriptionForm" novalidate> <!-- novalidate empêche la validation HTML5 par défaut qui peut interférer -->
+        
+        <form id="inscriptionForm">
             <div class="form-step active" data-step="1">
                 <h3>Pour qui est cette réinscription ?</h3>
                 <div class="radio-card-group">
@@ -77,13 +78,78 @@
                         <option value="3">3 enfants</option><option value="4">4+ enfants</option>
                     </select>
                 </div>
-                <button type="button" class="btn btn-next">Suivant</button>
+                <div class="nav-buttons" style="justify-content: flex-end;"><button type="button" class="btn btn-next">Suivant</button></div>
             </div>
-            <!-- ... (Le reste du HTML est inchangé) ... -->
+            
+            <div class="form-step" data-step="2">
+                <h3>Informations personnelles</h3>
+                <div id="section-responsable" class="hidden">
+                    <h4>Responsable Légal</h4>
+                    <input type="text" name="nomResponsable" placeholder="Nom & Prénom du responsable">
+                    <input type="email" name="emailResponsable" placeholder="Email (pour la confirmation)">
+                    <input type="tel" name="telephoneResponsable" placeholder="Téléphone">
+                    <input type="text" name="adresseResponsable" placeholder="Adresse postale">
+                    <input type="text" name="codePostalResponsable" placeholder="Code Postal">
+                    <input type="text" name="villeResponsable" placeholder="Ville">
+                </div>
+                <div id="adherent-info-container"></div>
+                <div class="nav-buttons"><button type="button" class="btn btn-prev">Précédent</button><button type="button" class="btn btn-next">Suivant</button></div>
+            </div>
+
+            <div class="form-step" data-step="3">
+                 <h3>Dossier de Santé</h3>
+                <div class="health-pdf-links">
+                    <a href="https://drive.google.com/file/d/1dD8kER0IXqTzQwUT9EEfKdsBb13-Qv9p/view?usp=share_link" target="_blank" rel="noopener noreferrer">Consulter le questionnaire MINEUR</a>
+                    <a href="https://drive.google.com/file/d/1g343Xgj3jVNfLD31uHyXyT-l2a048RwS/view?usp=sharing" target="_blank" rel="noopener noreferrer">Consulter le questionnaire MAJEUR</a>
+                </div>
+                <div class="radio-group-vertical" style="margin-top:20px;">
+                    <label><input type="radio" name="reponseQuestionnaire" value="non" required> J'atteste avoir répondu "NON" à toutes les questions.</label>
+                    <small id="email-signature-info" class="hidden" style="display:block;margin-top:-5px;margin-bottom:10px;padding-left:15px;color:#555;">Un e-mail vous sera envoyé pour signer électroniquement cette attestation.</small>
+                    <label><input type="radio" name="reponseQuestionnaire" value="oui" required> J'ai répondu "OUI" à au moins une question (certificat médical requis).</label>
+                </div>
+                <div id="certificat-medical-container" class="hidden file-upload-wrapper">
+                    <p class="warning">Veuillez joindre un certificat médical.</p>
+                    <label for="certificatMedical" class="btn">Téléverser le(s) certificat(s)</label>
+                    <input type="file" id="certificatMedical" name="certificatMedical" class="hidden" accept=".pdf,.jpg,.jpeg,.png" multiple>
+                    <span id="certificat-file-name">Aucun fichier choisi</span>
+                </div>
+                <div class="nav-buttons"><button type="button" class="btn btn-prev">Précédent</button><button type="button" class="btn btn-next">Suivant</button></div>
+            </div>
+
+            <div class="form-step" data-step="4">
+                <h3>Finalisation</h3>
+                 <div id="section-cotisation">
+                     <h4>Cotisation</h4>
+                     <p>Montant total pour la saison : <strong id="montantTotal">130 €</strong></p>
+                </div>
+                <div class="checkbox-group"><input type="checkbox" id="droitImage" name="droitImage" required><label for="droitImage">J'autorise la prise de vue et la diffusion de mon image (ou celle de mon/mes enfant(s)).</label></div>
+                <div class="checkbox-group"><input type="checkbox" id="reglement" name="reglement" required><label for="reglement">J'ai lu et j'accepte le <a href="https://drive.google.com/file/d/1sBCrjrDXDr-Qh1mcUJ71ytZFIiTt5xvi/view?usp=sharing" target="_blank" rel="noopener noreferrer">règlement intérieur</a>.</label></div>
+                <div class="nav-buttons"><button type="button" class="btn btn-prev">Précédent</button><button type="submit" id="submitBtn" class="btn">Envoyer</button></div>
+            </div>
         </form>
-        <!-- ... (Le reste du HTML est inchangé) ... -->
+        
+        <div id="loading" class="hidden"> <div class="spinner"></div> <p>Envoi en cours...</p> </div>
+        <div id="successMessage" class="hidden">
+            <h2>Pré-inscription enregistrée !</h2>
+            <p>Merci ! Un email de confirmation vient de vous être envoyé.</p>
+            <p>Le montant de la cotisation est de <strong id="montantFinal"></strong>.</p>
+            <p class="warning" style="text-align: left;">La cotisation sera à régler par espèce ou par chèque à l'ordre de "Espérance Drouaise".<br>Veuillez la placer dans une enveloppe au nom et prénom de l'enfant, puis la remettre au club lors de la première séance.</p>
+        </div>
+        <div id="errorMessage" class="hidden"> <h2>Une erreur est survenue.</h2> <p>Veuillez contacter le club à <a href="mailto:ed28gym@gmail.com">ed28gym@gmail.com</a>.</p> </div>
     </div>
     
+    <div id="camera-modal" class="hidden">
+        <video id="camera-feed" autoplay playsinline></video>
+        <canvas id="photo-canvas" class="hidden"></canvas>
+        <div id="camera-overlay"></div>
+        <div class="camera-buttons">
+            <button id="capture-btn" class="btn">Capturer</button>
+            <button id="recapture-btn" class="btn hidden">Reprendre</button>
+            <button id="confirm-photo-btn" class="btn hidden">Confirmer</button>
+            <button id="cancel-camera-btn" class="btn btn-prev">Annuler</button>
+        </div>
+    </div>
+
     <!-- ======================= JAVASCRIPT FINAL ET DÉFINITIF ======================= -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -94,23 +160,26 @@
             const nextBtns = document.querySelectorAll('.btn-next');
             const prevBtns = document.querySelectorAll('.btn-prev');
             const progressBar = document.getElementById('progressBar');
-            const sectionResponsable = document.getElementById('section-responsable');
             const typeAdherentRadios = document.querySelectorAll('input[name="typeAdherent"]');
             const numEnfantsSelect = document.getElementById('numEnfants');
             const cotisationMineurSelect = document.getElementById('cotisation-mineur-select');
             
             let currentStep = 1;
-
-            // --- GESTION DE LA NAVIGATION ---
-            nextBtns.forEach(btn => btn.addEventListener('click', () => {
-                if (validateCurrentStep()) {
-                    changeStep(1);
-                }
-            }));
             
-            prevBtns.forEach(btn => btn.addEventListener('click', () => {
-                changeStep(-1);
-            }));
+            // --- GESTION DE LA NAVIGATION ---
+            nextBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (validateCurrentStep()) {
+                        changeStep(1);
+                    }
+                });
+            });
+            
+            prevBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    changeStep(-1);
+                });
+            });
 
             function changeStep(direction) {
                 steps[currentStep - 1].classList.remove('active');
@@ -123,36 +192,28 @@
                 progressBar.style.width = `${((currentStep - 1) / (steps.length - 1)) * 100}%`;
             }
 
-            // --- FONCTION DE VALIDATION DÉFINITIVE ET SIMPLIFIÉE ---
+            // --- FONCTION DE VALIDATION DÉFINITIVE ---
             function validateCurrentStep() {
                 const stepElement = steps[currentStep - 1];
-                const inputs = stepElement.querySelectorAll('input, select');
-                let allValid = true;
-
+                const inputs = stepElement.querySelectorAll('input[required], select[required]');
+                
                 for (const input of inputs) {
-                    // On ne vérifie la validité que des champs qui ont l'attribut 'required'
-                    if (input.hasAttribute('required')) {
-                        let isValid = true;
-                        if (input.type === 'radio') {
-                            const radioGroup = document.querySelectorAll(`input[name="${input.name}"]`);
-                            isValid = Array.from(radioGroup).some(radio => radio.checked);
-                        } else if (input.type === 'checkbox') {
-                            isValid = input.checked;
-                        } else {
-                            isValid = input.value.trim() !== '';
+                    if (input.type === 'radio') {
+                        if (!document.querySelector(`input[name="${input.name}"]:checked`)) {
+                            alert('Veuillez faire un choix pour continuer.');
+                            return false;
                         }
-                        
-                        if (!isValid) {
-                            alert('Veuillez remplir tous les champs obligatoires pour continuer.');
-                            allValid = false;
-                            break; // Arrête la boucle dès qu'un champ invalide est trouvé
+                    } else if (input.type === 'checkbox') {
+                         if (!input.checked) {
+                            alert('Veuillez accepter les conditions pour continuer.');
+                            return false;
                         }
+                    } else if (!input.value.trim()) {
+                        alert('Veuillez remplir tous les champs obligatoires.');
+                        return false;
                     }
                 }
-                
-                if (!allValid) return false;
 
-                // Validation spéciale pour les photos (qui n'ont pas l'attribut 'required')
                 if (currentStep === 2) {
                     const adherentCount = getAdherentCount();
                     if (photoFilesMap.size < adherentCount) {
@@ -162,8 +223,22 @@
                 }
                 return true;
             }
+
+            // --- Le reste du script est fonctionnel et recopié ---
+            let photoFilesMap = new Map();
+            let currentlyActiveChildIndex = null;
+            let stream;
+            const sectionResponsable = document.getElementById('section-responsable');
+            const adherentInfoContainer = document.getElementById('adherent-info-container');
+            const hiddenPhotoInput = document.getElementById('photo-file-input');
+            const cameraModal = document.getElementById('camera-modal');
+            const video = document.querySelector('#camera-modal video');
+            const canvas = document.querySelector('#camera-modal canvas');
+            const captureBtn = document.querySelector('#camera-modal #capture-btn');
+            const recaptureBtn = document.querySelector('#camera-modal #recapture-btn');
+            const confirmBtn = document.querySelector('#camera-modal #confirm-photo-btn');
+            const cancelBtn = document.querySelector('#camera-modal #cancel-camera-btn');
             
-            // --- GESTION DYNAMIQUE DES CHAMPS REQUIS ---
             typeAdherentRadios.forEach(radio => radio.addEventListener('change', (e) => {
                 const type = e.target.value;
                 const respInputs = sectionResponsable.querySelectorAll('input');
@@ -172,7 +247,7 @@
                     sectionResponsable.classList.remove('hidden');
                     respInputs.forEach(i => i.required = true);
                     numEnfantsSelect.required = true;
-                } else { // majeur
+                } else {
                     cotisationMineurSelect.classList.add('hidden');
                     sectionResponsable.classList.add('hidden');
                     respInputs.forEach(i => i.required = false);
@@ -187,33 +262,16 @@
                 generateAdherentFields(parseInt(numEnfantsSelect.value));
             });
 
-            // --- Le reste du script est fonctionnel ---
-            let photoFilesMap = new Map();
-            let currentlyActiveChildIndex = null;
-            const adherentInfoContainer = document.getElementById('adherent-info-container');
-            const hiddenPhotoInput = document.getElementById('photo-file-input');
-
-            adherentInfoContainer.addEventListener('click', (e) => {
-                const target = e.target;
-                if (target.classList.contains('choose-photo-btn')) {
-                    currentlyActiveChildIndex = target.dataset.childIndex;
-                    hiddenPhotoInput.click();
-                }
-            });
-
-            hiddenPhotoInput.addEventListener('change', (e) => {
-                if (e.target.files.length > 0 && currentlyActiveChildIndex) {
-                    photoFilesMap.set(currentlyActiveChildIndex, e.target.files[0]);
-                    updatePhotoFileName(currentlyActiveChildIndex, e.target.files[0].name);
-                }
-                hiddenPhotoInput.value = '';
-            });
-
-            function updatePhotoFileName(childIndex, fileName) {
-                const span = document.getElementById(`photo-file-name-${childIndex}`);
-                if (span) { span.textContent = fileName; span.style.color = '#28a745'; }
-            }
-
+            adherentInfoContainer.addEventListener('click', (e) => { const target = e.target; if (target.classList.contains('choose-photo-btn')) { currentlyActiveChildIndex = target.dataset.childIndex; hiddenPhotoInput.click(); } if (target.classList.contains('take-photo-btn')) { currentlyActiveChildIndex = target.dataset.childIndex; openCamera(); } });
+            hiddenPhotoInput.addEventListener('change', (e) => { if (e.target.files.length > 0 && currentlyActiveChildIndex) { photoFilesMap.set(currentlyActiveChildIndex, e.target.files[0]); updatePhotoFileName(currentlyActiveChildIndex, e.target.files[0].name); } hiddenPhotoInput.value = ''; });
+            async function openCamera() { try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } }); video.srcObject = stream; cameraModal.classList.remove('hidden'); video.classList.remove('hidden'); canvas.classList.add('hidden'); captureBtn.classList.remove('hidden'); recaptureBtn.classList.add('hidden'); confirmBtn.classList.add('hidden'); } catch (err) { alert("Impossible d'accéder à la caméra."); } }
+            captureBtn.addEventListener('click', () => { canvas.width = video.videoWidth; canvas.height = video.videoHeight; canvas.getContext('2d').drawImage(video, 0, 0); video.classList.add('hidden'); canvas.classList.remove('hidden'); captureBtn.classList.add('hidden'); recaptureBtn.classList.remove('hidden'); confirmBtn.classList.remove('hidden'); });
+            recaptureBtn.addEventListener('click', () => { video.classList.remove('hidden'); canvas.classList.add('hidden'); captureBtn.classList.remove('hidden'); recaptureBtn.classList.add('hidden'); confirmBtn.classList.add('hidden'); });
+            confirmBtn.addEventListener('click', () => { canvas.toBlob(blob => { const newFile = new File([blob], `photo_cam_${currentlyActiveChildIndex}.jpg`, { type: 'image/jpeg' }); photoFilesMap.set(currentlyActiveChildIndex, newFile); updatePhotoFileName(currentlyActiveChildIndex, newFile.name); stopCamera(); }, 'image/jpeg'); });
+            cancelBtn.addEventListener('click', () => stopCamera());
+            function stopCamera() { if (stream) { stream.getTracks().forEach(track => track.stop()); } cameraModal.classList.add('hidden'); }
+            function updatePhotoFileName(childIndex, fileName) { const span = document.getElementById(`photo-file-name-${childIndex}`); if (span) { span.textContent = fileName; span.style.color = '#28a745'; span.style.fontWeight = 'bold'; } }
+            
             function generateAdherentFields(count) {
                 adherentInfoContainer.innerHTML = '';
                 photoFilesMap.clear();
@@ -223,7 +281,6 @@
                     const title = isMajeur ? `<h4>Informations Adhérent</h4>` : `<h4>Informations Enfant ${i}</h4>`;
                     const fieldGroup = document.createElement('div');
                     fieldGroup.className = 'child-info-group';
-                    // Les champs sont requis ou non en fonction de la logique parente
                     fieldGroup.innerHTML = `
                         ${title}
                         <input type="text" name="prenom_${i}" placeholder="Prénom" required>
@@ -233,24 +290,20 @@
                         ${isMajeur ? `<input type="email" name="email_${i}" placeholder="Email (pour confirmation)" required><input type="text" name="adresse_${i}" placeholder="Adresse postale" required><input type="text" name="codePostal_${i}" placeholder="Code Postal" required><input type="text" name="ville_${i}" placeholder="Ville" required>` : ''}
                         <div class="file-upload-wrapper">
                             <p style="margin-bottom: 10px;">Photo d'identité :</p>
+                            <small style="display:block; margin: -5px 0 10px 0;">Placez le visage dans le cadre sur un fond clair.</small>
                             <button type="button" class="btn choose-photo-btn" data-child-index="${i}">Choisir un fichier</button>
+                            <button type="button" class="btn take-photo-btn" data-child-index="${i}">Prendre une photo</button>
                             <span id="photo-file-name-${i}">Aucune photo choisie</span>
                         </div>
                     `;
                     adherentInfoContainer.appendChild(fieldGroup);
                 }
             }
-
-            function updateCotisation() {
-                const type = document.querySelector('input[name="typeAdherent"]:checked')?.value;
-                let montant = 130;
-                if (type === 'mineur') { const nbEnfants = parseInt(numEnfantsSelect.value); const tarifs = { 1: 130, 2: 210, 3: 230, 4: 250 }; montant = tarifs[nbEnfants] || 250; }
-                document.getElementById('montantTotal').textContent = `${montant} €`;
-            }
-
-            const getAdherentCount = () => { const type = document.querySelector('input[name="typeAdherent"]:checked')?.value; return type === 'majeur' ? 1 : parseInt(numEnfantsSelect.value, 10); };
             
-            // Soumission (inchangée)
+            function updateCotisation() { const type = document.querySelector('input[name="typeAdherent"]:checked')?.value; let montant = 130; if (type === 'mineur') { const nbEnfants = parseInt(numEnfantsSelect.value); const tarifs = { 1: 130, 2: 210, 3: 230, 4: 250 }; montant = tarifs[nbEnfants] || 250; } document.getElementById('montantTotal').textContent = `${montant} €`; }
+            const getAdherentCount = () => { const type = document.querySelector('input[name="typeAdherent"]:checked')?.value; return type === 'majeur' ? 1 : parseInt(numEnfantsSelect.value, 10); };
+            document.querySelectorAll('input[name="reponseQuestionnaire"]').forEach(radio => radio.addEventListener('change', (e) => { const certifContainer = document.getElementById('certificat-medical-container'); const certifInput = document.getElementById('certificatMedical'); const signatureInfo = document.getElementById('email-signature-info'); if (e.target.value === 'oui') { certifContainer.classList.remove('hidden'); certifInput.required = true; signatureInfo.classList.add('hidden'); } else { certifContainer.classList.add('hidden'); certifInput.required = false; signatureInfo.classList.remove('hidden'); }}));
+            document.getElementById('certificatMedical').addEventListener('change', (e) => { document.getElementById('certificat-file-name').textContent = e.target.files.length > 0 ? `${e.target.files.length} fichier(s) choisi(s)` : "Aucun fichier choisi"; });
             form.addEventListener('submit', async (e) => { e.preventDefault(); /* ... (La logique de soumission est correcte) ... */ });
         });
     </script>
