@@ -17,8 +17,8 @@
         header { text-align: center; margin-bottom: 25px; }
         .logo { max-width: 80px; margin-bottom: 10px; }
         h2 { color: var(--primary-color); margin: 0; }
-        h3 { text-align: center; color: #333; margin-bottom: 25px; }
-        h4 { margin-top: 20px; margin-bottom: 10px; color: var(--primary-color); border-bottom: 2px solid var(--light-grey); padding-bottom: 5px; }
+        h3, h4 { color: #333; }
+        h4 { margin-top: 20px; border-bottom: 2px solid var(--light-grey); padding-bottom: 5px; }
         .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 30px; height: 10px; margin-bottom: 30px; }
         .progress-bar-fill { height: 100%; background-color: var(--secondary-color); border-radius: 30px; width: 0%; transition: width 0.4s ease-in-out; }
         #inscriptionForm { position: relative; min-height: 400px; }
@@ -49,9 +49,26 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .child-info-group { border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; margin-bottom: 20px; background: #fafafa; }
         .health-pdf-links a { display: block; text-align: center; padding: 10px; background-color: var(--primary-color); color: white; text-decoration: none; border-radius: 8px; margin-bottom: 10px; }
-        #camera-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        
+        /* MODIFICATION ICI : Style pour le modal et le guide de cadrage */
+        #camera-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 1000;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
         #camera-modal video, #camera-modal canvas { max-width: 90%; max-height: 70vh; }
         #camera-modal .camera-buttons { margin-top: 20px; }
+        #camera-overlay {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 250px;  /* Ajustez la taille si besoin */
+            height: 330px; /* Ajustez la taille si besoin */
+            border: 4px dashed rgba(255, 255, 255, 0.7);
+            border-radius: 50% / 40%; /* Forme d'ovale pour un visage */
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5); /* Assombrit le reste de l'écran */
+            pointer-events: none; /* Permet aux clics de passer à travers */
+        }
     </style>
 </head>
 <body>
@@ -155,14 +172,16 @@
             <h2>Pré-inscription enregistrée !</h2>
             <p>Merci ! Un email de confirmation vient de vous être envoyé.</p>
             <p>Le montant de la cotisation est de <strong id="montantFinal"></strong>.</p>
-            <p class="warning" style="text-align: left;">La cotisation sera à régler par espèce ou par chèque à l'ordre de "Espérance Drouaise".<br>Veuillez la placer dans une enveloppe au nom et prénom de l'enfant (ou de l'adhérent), puis la remettre au club lors de la première séance.</p>
+            <p class="warning" style="text-align: left;">La cotisation sera à régler par espèce ou par chèque à l'ordre de "Espérance Drouaise".<br>Veuillez la placer dans une enveloppe au nom et prénom de l'enfant, puis la remettre au club lors de la première séance.</p>
         </div>
         <div id="errorMessage" class="hidden"> <h2>Une erreur est survenue.</h2> <p>Veuillez contacter le club à <a href="mailto:ed28gym@gmail.com">ed28gym@gmail.com</a>.</p> </div>
     </div>
     
+    <!-- MODIFICATION ICI : Ajout du guide de cadrage -->
     <div id="camera-modal" class="hidden">
         <video id="camera-feed" autoplay playsinline></video>
         <canvas id="photo-canvas" class="hidden"></canvas>
+        <div id="camera-overlay"></div>
         <div class="camera-buttons">
             <button id="capture-btn" class="btn">Capturer</button>
             <button id="recapture-btn" class="btn hidden">Reprendre</button>
@@ -277,25 +296,22 @@
             function validateStep(step) {
                 const stepElement = document.querySelector(`.form-step[data-step="${step}"]`);
                 const requiredInputs = stepElement.querySelectorAll('[required]');
-
                 for (const input of requiredInputs) {
-                    if (input.type === 'radio') {
-                        const radioGroup = stepElement.querySelectorAll(`input[name="${input.name}"]`);
-                        if (!Array.from(radioGroup).some(radio => radio.checked)) {
+                    if (input.offsetParent !== null) {
+                        if (input.type === 'radio' && !document.querySelector(`input[name="${input.name}"]:checked`)) {
                             alert('Veuillez faire un choix pour continuer.');
                             return false;
                         }
-                    } else if (input.type === 'checkbox') {
-                        if (!input.checked) {
+                        if (input.type === 'checkbox' && !input.checked) {
                             alert('Veuillez accepter les conditions pour continuer.');
                             return false;
                         }
-                    } else if (!input.value.trim()) {
-                        alert(`Veuillez remplir le champ "${input.placeholder || input.name}"`);
-                        return false;
+                        if (input.type !== 'radio' && input.type !== 'checkbox' && (!input.value || !input.value.trim())) {
+                             alert(`Veuillez remplir le champ "${input.placeholder || input.labels[0]?.textContent || input.name}"`);
+                             return false;
+                        }
                     }
                 }
-                
                 if (step === 2) {
                     const adherentCount = getAdherentCount();
                     if (photoFilesMap.size < adherentCount) {
@@ -313,11 +329,13 @@
                     cotisationMineurSelect.classList.remove('hidden');
                     sectionResponsable.classList.remove('hidden');
                     respInputs.forEach(i => i.setAttribute('required', ''));
+                    numEnfantsSelect.setAttribute('required', '');
                     generateAdherentFields(parseInt(numEnfantsSelect.value));
                 } else {
                     cotisationMineurSelect.classList.add('hidden');
                     sectionResponsable.classList.add('hidden');
                     respInputs.forEach(i => i.removeAttribute('required'));
+                    numEnfantsSelect.removeAttribute('required');
                     generateAdherentFields(1);
                 }
                 updateCotisation();
@@ -328,6 +346,7 @@
                 generateAdherentFields(parseInt(numEnfantsSelect.value));
             });
 
+            // MODIFICATION ICI : Ajout de l'instruction pour la photo dans cette fonction
             function generateAdherentFields(count) {
                 adherentInfoContainer.innerHTML = '';
                 photoFilesMap.clear();
@@ -346,6 +365,7 @@
                         ${isMajeur ? `<input type="email" name="email_${i}" placeholder="Email (pour confirmation)" required><input type="text" name="adresse_${i}" placeholder="Adresse postale" required><input type="text" name="codePostal_${i}" placeholder="Code Postal" required><input type="text" name="ville_${i}" placeholder="Ville" required>` : ''}
                         <div class="file-upload-wrapper">
                             <p style="margin-bottom: 10px;">Photo d'identité :</p>
+                            <small style="display:block; margin: -5px 0 10px 0;">Placez le visage dans le cadre sur un fond clair.</small>
                             <button type="button" class="btn choose-photo-btn" data-child-index="${i}">Choisir un fichier</button>
                             <button type="button" class="btn take-photo-btn" data-child-index="${i}">Prendre une photo</button>
                             <span id="photo-file-name-${i}">Aucune photo choisie</span>
@@ -353,9 +373,25 @@
                     `;
                     adherentInfoContainer.appendChild(fieldGroup);
                 }
-                 updatePhotoFileName();
+                updateAllPhotoFileNames();
             }
 
+            function updateAllPhotoFileNames() {
+                const count = getAdherentCount();
+                for (let i = 1; i <= count; i++) {
+                    const file = photoFilesMap.get(String(i));
+                    updatePhotoFileName(String(i), file ? file.name : "Aucune photo choisie");
+                }
+            }
+
+            reponseQuestionnaireRadios.forEach(radio => { /* ... (inchangé) ... */ });
+            function updateCotisation() { /* ... (inchangé) ... */ }
+            const getAdherentCount = () => { /* ... (inchangé) ... */ };
+            certificatInput.addEventListener('change', (e) => { /* ... (inchangé) ... */ });
+
+            form.addEventListener('submit', async (e) => { /* ... (inchangé, la logique est déjà bonne) ... */ });
+            
+            // --- Le reste des fonctions (récupérées des réponses précédentes pour être complet) ---
             reponseQuestionnaireRadios.forEach(radio => radio.addEventListener('change', (e) => {
                 const emailSignatureInfo = document.getElementById('email-signature-info');
                 if (e.target.value === 'oui') {
@@ -368,7 +404,7 @@
                     emailSignatureInfo.classList.remove('hidden');
                 }
             }));
-            
+
             function updateCotisation() {
                 const type = document.querySelector('input[name="typeAdherent"]:checked')?.value;
                 let montant = 130;
@@ -388,10 +424,8 @@
                     const adherentCount = getAdherentCount();
                     const orderedPhotoFiles = [];
                     for (let i = 1; i <= adherentCount; i++) { orderedPhotoFiles.push(photoFilesMap.get(String(i))); }
-
                     const fileToBase64 = (file) => new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve({ base64: reader.result, mimeType: file.type, fileName: file.name }); reader.onerror = reject; });
                     const photosBase64 = await Promise.all(orderedPhotoFiles.map(f => fileToBase64(f)));
-                    
                     const data = {
                         typeAdherent: formData.get('typeAdherent'),
                         nomResponsable: formData.get('nomResponsable'),
@@ -408,7 +442,6 @@
                         photos: photosBase64,
                         certificats: await Promise.all(Array.from(formData.getAll('certificatMedical')).filter(f => f.size > 0).map(f => fileToBase64(f)))
                     };
-                    
                     for (let i = 1; i <= adherentCount; i++) {
                         data.adherents.push({
                             prenom: formData.get(`prenom_${i}`), nom: formData.get(`nom_${i}`), dateNaissance: formData.get(`dateNaissance_${i}`),
@@ -416,10 +449,8 @@
                             codePostal: formData.get(`codePostal_${i}`), ville: formData.get(`ville_${i}`),
                         });
                     }
-
                     const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
                     const result = await response.json();
-                    
                     document.getElementById('loading').classList.add('hidden');
                     if (result.status === 'success') { 
                         document.getElementById('montantFinal').textContent = data.montantCotisation;
