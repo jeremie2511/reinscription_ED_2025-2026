@@ -129,11 +129,12 @@
     </div>
     <div id="camera-modal" class="hidden"> ... </div>
 
-    <!-- ======================= JAVASCRIPT CORRIGÉ ET DÉFINITIF ======================= -->
+    <!-- ======================= JAVASCRIPT FINAL ET DÉFINITIF ======================= -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzoDe8VcbxozPLjZTDsh8qs83P-ch6fMmKKz4L01qfy9adk6fjVBWp6boyGWQab7kMVTA/exec';
             
+            // --- Déclaration des constantes ---
             const form = document.getElementById('inscriptionForm');
             const steps = Array.from(document.querySelectorAll('.form-step'));
             const nextBtns = document.querySelectorAll('.btn-next');
@@ -147,10 +148,17 @@
             
             let currentStep = 1;
             let photoFilesMap = new Map();
-
-            // --- NAVIGATION ---
-            nextBtns.forEach(btn => btn.addEventListener('click', () => { if (validateStep(currentStep)) changeStep(1); }));
-            prevBtns.forEach(btn => btn.addEventListener('click', () => changeStep(-1)));
+            
+            // --- GESTION DE LA NAVIGATION ---
+            nextBtns.forEach(btn => btn.addEventListener('click', () => {
+                if (validateStep(currentStep)) {
+                    changeStep(1); // 1 pour avancer
+                }
+            }));
+            
+            prevBtns.forEach(btn => btn.addEventListener('click', () => {
+                changeStep(-1); // -1 pour reculer
+            }));
 
             function changeStep(direction) {
                 steps[currentStep - 1].classList.remove('active');
@@ -159,33 +167,52 @@
                 updateProgressBar();
             }
 
-            function updateProgressBar() { progressBar.style.width = `${((currentStep - 1) / (steps.length - 1)) * 100}%`; }
+            function updateProgressBar() {
+                progressBar.style.width = `${((currentStep - 1) / (steps.length - 1)) * 100}%`;
+            }
 
-            // --- VALIDATION DÉFINITIVE ---
+            // --- FONCTION DE VALIDATION DÉFINITIVE ---
             function validateStep(step) {
-                const stepElement = document.querySelector(`.form-step[data-step="${step}"]`);
-                // Utilise la validation native du navigateur
-                if (!stepElement.checkValidity()) {
-                    // Cherche le premier champ invalide pour afficher un message
-                    const firstInvalidField = stepElement.querySelector(':invalid');
-                    if(firstInvalidField){
-                        alert(`Veuillez remplir le champ : "${firstInvalidField.placeholder || firstInvalidField.name}"`);
-                        firstInvalidField.focus();
-                    } else {
-                         alert('Veuillez remplir tous les champs obligatoires.');
+                // Validation spécifique et infaillible pour l'étape 1
+                if (step === 1) {
+                    if (!document.querySelector('input[name="typeAdherent"]:checked')) {
+                        alert('Veuillez choisir un type d\'adhérent pour continuer.');
+                        return false;
                     }
-                    return false;
+                    return true; // Si un choix est fait, on passe.
                 }
-                 if (step === 2) {
+
+                // Validation pour les autres étapes
+                const stepElement = document.querySelector(`.form-step[data-step="${step}"]`);
+                const inputs = stepElement.querySelectorAll('input[required], select[required]');
+
+                for (const input of inputs) {
+                    // On ne valide que les champs qui sont réellement visibles
+                    if (input.offsetParent !== null) {
+                        if (input.type === 'radio' && !document.querySelector(`input[name="${input.name}"]:checked`)) {
+                            alert('Veuillez faire un choix.'); return false;
+                        }
+                        if (input.type === 'checkbox' && !input.checked) {
+                            alert('Veuillez cocher cette case.'); return false;
+                        }
+                        if (input.type !== 'radio' && input.type !== 'checkbox' && !input.value.trim()) {
+                            alert('Veuillez remplir tous les champs obligatoires.'); return false;
+                        }
+                    }
+                }
+                
+                // Validation spéciale pour les photos
+                if (step === 2) {
                     const adherentCount = getAdherentCount();
                     if (photoFilesMap.size < adherentCount) {
-                        alert(`Veuillez fournir une photo pour chaque adhérent (${photoFilesMap.size}/${adherentCount}).`); return false;
+                        alert(`Veuillez fournir une photo pour chaque adhérent (${photoFilesMap.size}/${adherentCount}).`);
+                        return false;
                     }
                 }
                 return true;
             }
 
-            // --- GESTION DYNAMIQUE DES CHAMPS REQUIS ---
+            // --- GESTION DYNAMIQUE DES CHAMPS ---
             typeAdherentRadios.forEach(radio => radio.addEventListener('change', (e) => {
                 const type = e.target.value;
                 const respInputs = sectionResponsable.querySelectorAll('input');
@@ -195,7 +222,7 @@
                     respInputs.forEach(i => i.required = true);
                     numEnfantsSelect.required = true;
                     generateAdherentFields(parseInt(numEnfantsSelect.value));
-                } else {
+                } else { // majeur
                     cotisationMineurSelect.classList.add('hidden');
                     sectionResponsable.classList.add('hidden');
                     respInputs.forEach(i => i.required = false);
@@ -210,6 +237,8 @@
                 generateAdherentFields(parseInt(numEnfantsSelect.value));
             });
 
+            // --- Le reste du script est fonctionnel ---
+            // (Je le recopie entièrement pour que vous ayez un seul bloc propre à coller)
             function generateAdherentFields(count) {
                 adherentInfoContainer.innerHTML = '';
                 photoFilesMap.clear();
@@ -228,7 +257,9 @@
                         ${isMajeur ? `<input type="email" name="email_${i}" placeholder="Email (pour confirmation)" required><input type="text" name="adresse_${i}" placeholder="Adresse postale" required><input type="text" name="codePostal_${i}" placeholder="Code Postal" required><input type="text" name="ville_${i}" placeholder="Ville" required>` : ''}
                         <div class="file-upload-wrapper">
                             <p style="margin-bottom: 10px;">Photo d'identité :</p>
+                            <small style="display:block; margin: -5px 0 10px 0;">Placez le visage dans le cadre sur un fond clair.</small>
                             <button type="button" class="btn choose-photo-btn" data-child-index="${i}">Choisir un fichier</button>
+                            <button type="button" class="btn take-photo-btn" data-child-index="${i}">Prendre une photo</button>
                             <span id="photo-file-name-${i}">Aucune photo choisie</span>
                         </div>
                     `;
@@ -245,16 +276,20 @@
 
             const getAdherentCount = () => { const type = document.querySelector('input[name="typeAdherent"]:checked')?.value; return type === 'majeur' ? 1 : parseInt(numEnfantsSelect.value, 10); };
             
-            // Le reste du script (photo, soumission, etc.) est fonctionnel et n'est pas la cause du blocage. 
-            // Je le recopie pour que le fichier soit complet.
-            let currentlyActiveChildIndex = null;
-            const hiddenPhotoInput = document.getElementById('photo-file-input');
-            adherentInfoContainer.addEventListener('click', (e) => { const target = e.target; if (target.classList.contains('choose-photo-btn')) { currentlyActiveChildIndex = target.dataset.childIndex; hiddenPhotoInput.click(); } });
+            // Le reste des fonctions (logique photo, soumission, etc.) reste le même.
+            let currentlyActiveChildIndex = null; let stream; const hiddenPhotoInput = document.getElementById('photo-file-input'); const cameraModal = document.getElementById('camera-modal'); const video = document.querySelector('#camera-modal video'); const canvas = document.querySelector('#camera-modal canvas'); const captureBtn = document.querySelector('#camera-modal #capture-btn'); const recaptureBtn = document.querySelector('#camera-modal #recapture-btn'); const confirmBtn = document.querySelector('#camera-modal #confirm-photo-btn'); const cancelBtn = document.querySelector('#camera-modal #cancel-camera-btn');
+            adherentInfoContainer.addEventListener('click', (e) => { const target = e.target; if (target.classList.contains('choose-photo-btn')) { currentlyActiveChildIndex = target.dataset.childIndex; hiddenPhotoInput.click(); } if (target.classList.contains('take-photo-btn')) { currentlyActiveChildIndex = target.dataset.childIndex; openCamera(); } });
             hiddenPhotoInput.addEventListener('change', (e) => { if (e.target.files.length > 0 && currentlyActiveChildIndex) { photoFilesMap.set(currentlyActiveChildIndex, e.target.files[0]); updatePhotoFileName(currentlyActiveChildIndex, e.target.files[0].name); } hiddenPhotoInput.value = ''; });
+            async function openCamera() { try { stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } }); video.srcObject = stream; cameraModal.classList.remove('hidden'); video.classList.remove('hidden'); canvas.classList.add('hidden'); captureBtn.classList.remove('hidden'); recaptureBtn.classList.add('hidden'); confirmBtn.classList.add('hidden'); } catch (err) { alert("Impossible d'accéder à la caméra."); } }
+            captureBtn.addEventListener('click', () => { canvas.width = video.videoWidth; canvas.height = video.videoHeight; canvas.getContext('2d').drawImage(video, 0, 0); video.classList.add('hidden'); canvas.classList.remove('hidden'); captureBtn.classList.add('hidden'); recaptureBtn.classList.remove('hidden'); confirmBtn.classList.remove('hidden'); });
+            recaptureBtn.addEventListener('click', () => { video.classList.remove('hidden'); canvas.classList.add('hidden'); captureBtn.classList.remove('hidden'); recaptureBtn.classList.add('hidden'); confirmBtn.classList.add('hidden'); });
+            confirmBtn.addEventListener('click', () => { canvas.toBlob(blob => { const newFile = new File([blob], `photo_cam_${currentlyActiveChildIndex}.jpg`, { type: 'image/jpeg' }); photoFilesMap.set(currentlyActiveChildIndex, newFile); updatePhotoFileName(currentlyActiveChildIndex, newFile.name); stopCamera(); }, 'image/jpeg'); });
+            cancelBtn.addEventListener('click', () => stopCamera());
+            function stopCamera() { if (stream) { stream.getTracks().forEach(track => track.stop()); } cameraModal.classList.add('hidden'); }
             function updatePhotoFileName(childIndex, fileName) { const span = document.getElementById(`photo-file-name-${childIndex}`); if (span) { span.textContent = fileName; span.style.color = '#28a745'; span.style.fontWeight = 'bold'; } }
-            document.querySelectorAll('input[name="reponseQuestionnaire"]').forEach(radio => radio.addEventListener('change', (e) => { const certifContainer = document.getElementById('certificat-medical-container'); const certifInput = document.getElementById('certificatMedical'); const signatureInfo = document.getElementById('email-signature-info'); if (e.target.value === 'oui') { certifContainer.classList.remove('hidden'); certifInput.required = true; signatureInfo.classList.add('hidden'); } else { certifContainer.classList.add('hidden'); certifInput.required = false; signatureInfo.classList.remove('hidden'); }}));
+            document.querySelectorAll('input[name="reponseQuestionnaire"]').forEach(radio => radio.addEventListener('change', (e) => { const certifContainer = document.getElementById('certificat-medical-container'); const certifInput = document.getElementById('certificatMedical'); const signatureInfo = document.getElementById('email-signature-info'); if (e.target.value === 'oui') { certifContainer.classList.remove('hidden'); certifInput.required = true; signatureInfo.classList.add('hidden'); } else { certifContainer.classList.add('hidden'); certifInput.required = false; signatureInfo.classList.remove('hidden'); } }));
             document.getElementById('certificatMedical').addEventListener('change', (e) => { document.getElementById('certificat-file-name').textContent = e.target.files.length > 0 ? `${e.target.files.length} fichier(s) choisi(s)` : "Aucun fichier choisi"; });
-            form.addEventListener('submit', async (e) => { e.preventDefault(); /* ... (Logique de soumission complète) ... */ });
+            form.addEventListener('submit', async (e) => { e.preventDefault(); document.getElementById('loading').classList.remove('hidden'); form.classList.add('hidden'); try { const formData = new FormData(form); const adherentCount = getAdherentCount(); const orderedPhotoFiles = []; for (let i = 1; i <= adherentCount; i++) { orderedPhotoFiles.push(photoFilesMap.get(String(i))); } const fileToBase64 = (file) => new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve({ base64: reader.result, mimeType: file.type, fileName: file.name }); reader.onerror = reject; }); const photosBase64 = await Promise.all(orderedPhotoFiles.map(f => fileToBase64(f))); const data = { typeAdherent: formData.get('typeAdherent'), nomResponsable: formData.get('nomResponsable'), emailResponsable: formData.get('emailResponsable'), telephoneResponsable: formData.get('telephoneResponsable'), adresseResponsable: formData.get('adresseResponsable'), codePostalResponsable: formData.get('codePostalResponsable'), villeResponsable: formData.get('villeResponsable'), montantCotisation: document.getElementById('montantTotal').textContent, reponseSante: formData.get('reponseQuestionnaire'), droitImageAccepte: formData.get('droitImage') === 'on', reglementAccepte: formData.get('reglement') === 'on', adherents: [], photos: photosBase64, certificats: await Promise.all(Array.from(formData.getAll('certificatMedical')).filter(f => f.size > 0).map(f => fileToBase64(f))) }; for (let i = 1; i <= adherentCount; i++) { data.adherents.push({ prenom: formData.get(`prenom_${i}`), nom: formData.get(`nom_${i}`), dateNaissance: formData.get(`dateNaissance_${i}`), email: formData.get(`email_${i}`), adresse: formData.get(`adresse_${i}`), codePostal: formData.get(`codePostal_${i}`), ville: formData.get(`ville_${i}`), }); } const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'text/plain;charset=utf-8' } }); const result = await response.json(); document.getElementById('loading').classList.add('hidden'); if (result.status === 'success') { document.getElementById('montantFinal').textContent = data.montantCotisation; document.getElementById('successMessage').classList.remove('hidden'); } else { throw new Error(result.message); } } catch (error) { console.error('Erreur:', error); document.getElementById('loading').classList.add('hidden'); document.getElementById('errorMessage').classList.remove('hidden'); } });
         });
     </script>
 </body>
