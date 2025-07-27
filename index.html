@@ -64,7 +64,7 @@
         <div class="progress-bar"><div class="progress-bar-fill" id="progressBar"></div></div>
         <input type="file" id="photo-file-input" class="hidden" accept="image/*">
         
-        <form id="inscriptionForm">
+        <form id="inscriptionForm" novalidate>
             <div class="form-step active" data-step="1">
                 <h3>Pour qui est cette réinscription ?</h3>
                 <div class="radio-card-group">
@@ -165,7 +165,7 @@
             const cotisationMineurSelect = document.getElementById('cotisation-mineur-select');
             
             let currentStep = 1;
-            
+
             // --- GESTION DE LA NAVIGATION ---
             nextBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -223,7 +223,7 @@
                 }
                 return true;
             }
-
+            
             // --- Le reste du script est fonctionnel et recopié ---
             let photoFilesMap = new Map();
             let currentlyActiveChildIndex = null;
@@ -304,7 +304,35 @@
             const getAdherentCount = () => { const type = document.querySelector('input[name="typeAdherent"]:checked')?.value; return type === 'majeur' ? 1 : parseInt(numEnfantsSelect.value, 10); };
             document.querySelectorAll('input[name="reponseQuestionnaire"]').forEach(radio => radio.addEventListener('change', (e) => { const certifContainer = document.getElementById('certificat-medical-container'); const certifInput = document.getElementById('certificatMedical'); const signatureInfo = document.getElementById('email-signature-info'); if (e.target.value === 'oui') { certifContainer.classList.remove('hidden'); certifInput.required = true; signatureInfo.classList.add('hidden'); } else { certifContainer.classList.add('hidden'); certifInput.required = false; signatureInfo.classList.remove('hidden'); }}));
             document.getElementById('certificatMedical').addEventListener('change', (e) => { document.getElementById('certificat-file-name').textContent = e.target.files.length > 0 ? `${e.target.files.length} fichier(s) choisi(s)` : "Aucun fichier choisi"; });
-            form.addEventListener('submit', async (e) => { e.preventDefault(); /* ... (La logique de soumission est correcte) ... */ });
+            
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                if (!validateCurrentStep()) return; // Validation de la dernière étape avant envoi
+                
+                document.getElementById('loading').classList.remove('hidden');
+                form.classList.add('hidden');
+                try {
+                    const formData = new FormData(form);
+                    const adherentCount = getAdherentCount();
+                    const orderedPhotoFiles = [];
+                    for (let i = 1; i <= adherentCount; i++) { orderedPhotoFiles.push(photoFilesMap.get(String(i))); }
+                    const fileToBase64 = (file) => new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve({ base64: reader.result, mimeType: file.type, fileName: file.name }); reader.onerror = reject; });
+                    const photosBase64 = await Promise.all(orderedPhotoFiles.map(f => fileToBase64(f)));
+                    const data = { typeAdherent: formData.get('typeAdherent'), nomResponsable: formData.get('nomResponsable'), emailResponsable: formData.get('emailResponsable'), telephoneResponsable: formData.get('telephoneResponsable'), adresseResponsable: formData.get('adresseResponsable'), codePostalResponsable: formData.get('codePostalResponsable'), villeResponsable: formData.get('villeResponsable'), montantCotisation: document.getElementById('montantTotal').textContent, reponseSante: formData.get('reponseQuestionnaire'), droitImageAccepte: formData.get('droitImage') === 'on', reglementAccepte: formData.get('reglement') === 'on', adherents: [], photos: photosBase64, certificats: await Promise.all(Array.from(formData.getAll('certificatMedical')).filter(f => f.size > 0).map(f => fileToBase64(f))) };
+                    for (let i = 1; i <= adherentCount; i++) { data.adherents.push({ prenom: formData.get(`prenom_${i}`), nom: formData.get(`nom_${i}`), dateNaissance: formData.get(`dateNaissance_${i}`), email: formData.get(`email_${i}`), adresse: formData.get(`adresse_${i}`), codePostal: formData.get(`codePostal_${i}`), ville: formData.get(`ville_${i}`), }); }
+                    const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(data), headers: { 'Content-Type': 'text/plain;charset=utf-8' } });
+                    const result = await response.json();
+                    document.getElementById('loading').classList.add('hidden');
+                    if (result.status === 'success') {
+                        document.getElementById('montantFinal').textContent = data.montantCotisation;
+                        document.getElementById('successMessage').classList.remove('hidden');
+                    } else { throw new Error(result.message); }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('errorMessage').classList.remove('hidden');
+                }
+            });
         });
     </script>
 </body>
